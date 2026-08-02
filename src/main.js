@@ -63,20 +63,20 @@ if (app) {
         <h1 id="page-title">See who doesn't <em>follow you back.</em></h1>
       </section>
       <section class="instructions" aria-labelledby="instructions-title">
-        <div class="section-heading"><span aria-hidden="true">01</span><div><h2 id="instructions-title">Get your Instagram file</h2><p>Request the export first. Instagram will notify you when it is ready.</p></div></div>
+        <div class="section-heading"><span aria-hidden="true">01</span><div><h2 id="instructions-title">Get your Instagram file</h2><p>Instagram creates it for you. Use these exact settings:</p></div></div>
+        <div class="quick-settings" aria-label="Required export settings"><span>✓ Followers and following</span><span>✓ All time</span><span>✓ JSON format</span></div>
         <ol class="steps">
-          <li><b aria-hidden="true">1</b><h3>Open Accounts Center</h3><p>Instagram → Settings and activity → Accounts Center → Your information and permissions.</p></li>
-          <li><b aria-hidden="true">2</b><h3>Create an export</h3><p>Choose <strong>Export your information</strong> → Create export → your Instagram profile → Export to device.</p></li>
-          <li class="important"><b aria-hidden="true">3</b><h3>Choose the right options</h3><p>Select <strong>Followers and following</strong>, set date range to <strong>All time</strong>, and format to <strong>JSON</strong>.</p></li>
-          <li><b aria-hidden="true">4</b><h3>Download the ZIP</h3><p>Once Instagram notifies you, download the ZIP file. Leave it zipped—it's ready to use below.</p></li>
+          <li><b aria-hidden="true">1</b><h3>Open Accounts Center</h3><p>Tap the button below, or go to Instagram Settings → Accounts Center → Your information and permissions.</p></li>
+          <li class="important"><b aria-hidden="true">2</b><h3>Request the right data</h3><p>Export your information → Create export → Export to device. Choose only <strong>Followers and following</strong>, <strong>All time</strong>, and <strong>JSON</strong>.</p></li>
+          <li><b aria-hidden="true">3</b><h3>Use the downloaded file</h3><p>Instagram will notify you when it’s ready. Download it, then come back and drop the ZIP below—no need to unzip it.</p></li>
         </ol>
-        <a class="help-link" href="https://www.facebook.com/help/181231772500920" target="_blank" rel="noreferrer">View Meta's official export guide <span aria-hidden="true">↗</span><span class="sr-only"> (opens in a new tab)</span></a>
+        <div class="instruction-actions"><a class="primary-link" href="https://accountscenter.instagram.com/info_and_permissions/" target="_blank" rel="noreferrer">Open Instagram Accounts Center <span aria-hidden="true">↗</span><span class="sr-only"> (opens in a new tab)</span></a><a class="help-link" href="https://www.facebook.com/help/181231772500920" target="_blank" rel="noreferrer">Need help? View Meta’s guide <span aria-hidden="true">↗</span><span class="sr-only"> (opens in a new tab)</span></a></div>
       </section>
       <section class="upload-section" aria-labelledby="upload-title">
         <div class="section-heading"><span aria-hidden="true">02</span><div><h2 id="upload-title">Drop your export</h2><p>We’ll compare the two lists right here in your browser.</p></div></div>
         <label class="dropzone" id="dropzone" tabindex="0" role="button" aria-describedby="upload-help">
-          <input type="file" id="file" accept=".zip,application/zip" />
-          <span class="upload-icon" aria-hidden="true">↑</span><strong>Drop your Instagram ZIP here</strong><span>or <u>choose a file</u> from your device</span><small id="upload-help">ZIP only · Maximum 50 MB</small>
+          <input type="file" id="file" accept=".zip,.json,application/zip,application/json" multiple />
+          <span class="upload-icon" aria-hidden="true">↑</span><strong>Drop your Instagram file here</strong><span>or <u>choose files</u> from your device</span><small id="upload-help">ZIP recommended · JSON files also accepted · Maximum 50 MB</small>
         </label>
         <div id="status" class="status" role="status" aria-live="polite" aria-atomic="true"></div>
         <div id="results" class="results-box" tabindex="-1" aria-labelledby="results-title"></div>
@@ -104,7 +104,7 @@ if (app) {
   }));
   zone.addEventListener('drop', (event) => {
     const file = event.dataTransfer?.files?.[0];
-    if (file) processZip(file, { status, results });
+    if (file) processFiles(event.dataTransfer.files, { status, results, input, zone });
   });
   zone.addEventListener('keydown', (event) => {
     if (event.key === 'Enter' || event.key === ' ') {
@@ -112,7 +112,7 @@ if (app) {
       input.click();
     }
   });
-  input.addEventListener('change', () => input.files?.[0] && processZip(input.files[0], { status, results }));
+  input.addEventListener('change', () => input.files?.length && processFiles(input.files, { status, results, input, zone }));
 }
 
 function getUncompressedSize(entry) {
@@ -156,25 +156,54 @@ export async function parseInstagramZip(file) {
   return compareLists(followerJson, followingJson);
 }
 
-async function processZip(file, elements) {
-  const { status, results } = elements;
+export async function parseInstagramJsonFiles(fileList) {
+  const files = [...fileList];
+  if (!files.length || files.length > LIMITS.followerFiles + 1) throw new Error('Choose the following.json file and all followers_*.json files together.');
+  if (files.some((file) => file.size > LIMITS.jsonEntryBytes) || files.reduce((total, file) => total + file.size, 0) > LIMITS.selectedBytes) {
+    throw new Error('The selected JSON files are too large to process safely.');
+  }
+  const followingFile = files.find((file) => /^following\.json$/i.test(file.name));
+  const followerFiles = files.filter((file) => /^followers_\d+\.json$/i.test(file.name));
+  if (!followingFile || !followerFiles.length) throw new Error('Select following.json and every followers_*.json file at the same time.');
+
+  const followingJson = JSON.parse(await followingFile.text());
+  const followerJson = [];
+  for (const file of followerFiles) {
+    const parsed = JSON.parse(await file.text());
+    if (!Array.isArray(parsed)) throw new Error(`${file.name} has an unexpected format.`);
+    followerJson.push(...parsed);
+  }
+  return compareLists(followerJson, followingJson);
+}
+
+async function processFiles(fileList, elements) {
+  const { status, results, input, zone } = elements;
+  const files = [...fileList];
   results.replaceChildren();
-  status.innerHTML = `<div class="working"><i></i> Reading ${escapeHtml(file.name)}…</div>`;
+  if (!files.length) return;
+  status.innerHTML = `<div class="working"><i></i> Reading ${files.length === 1 ? escapeHtml(files[0].name) : `${files.length} selected files`}…</div>`;
   try {
-    const { followers, following, nonFollowers } = await parseInstagramZip(file);
+    const containsZip = files.some((file) => file.name.toLowerCase().endsWith('.zip'));
+    if (containsZip && files.length !== 1) throw new Error('Choose either one ZIP or the individual JSON files—not both.');
+    const { followers, following, nonFollowers } = containsZip
+      ? await parseInstagramZip(files[0])
+      : await parseInstagramJsonFiles(files);
     const excluded = loadExclusions();
     results.innerHTML = `<div class="summary"><div><small>Following</small><strong>${following.size.toLocaleString()}</strong></div><div><small>Followers in file</small><strong>${followers.size.toLocaleString()}</strong></div><div><small>Not following back</small><strong>${nonFollowers.length.toLocaleString()}</strong></div></div>
       <div class="notice"><strong>Before relying on this list:</strong> confirm that you requested an <b>All time</b> export. Instagram does not include a reliable setting in the ZIP that lets this tool verify the selected date range.</div>
-      <div class="result-head"><div><h2 id="results-title">Not following you back</h2><p>Based on the lists in this export. Follower counts are not checked.</p></div><button id="download" type="button">Download CSV</button></div>
-      <div class="filter-bar"><span id="visible-count"></span><button id="restore-exclusions" class="text-button" type="button">Restore excluded accounts</button></div>
+      <div class="result-head"><div><h2 id="results-title">Not following you back</h2><p>Based on the lists in this export. Follower counts are not checked.</p></div><div class="result-actions"><button id="start-over" class="secondary-button" type="button">Start over</button><button id="download" type="button">Download CSV</button></div></div>
+      <div class="filter-bar"><label>Search accounts <input id="account-search" type="search" placeholder="Type a username…" autocomplete="off" /></label><span id="visible-count"></span><button id="restore-exclusions" class="text-button" type="button">Restore excluded accounts</button></div>
       <div class="accounts" id="accounts"></div>`;
 
     const accounts = results.querySelector('#accounts');
     const visibleCount = results.querySelector('#visible-count');
     const restoreButton = results.querySelector('#restore-exclusions');
+    const searchInput = results.querySelector('#account-search');
     const renderAccounts = () => {
-      const visible = filterExcluded(nonFollowers, excluded);
-      const hiddenCount = nonFollowers.length - visible.length;
+      const filtered = filterExcluded(nonFollowers, excluded);
+      const query = searchInput.value.trim().toLowerCase();
+      const visible = query ? filtered.filter((username) => username.includes(query)) : filtered;
+      const hiddenCount = nonFollowers.length - filtered.length;
       visibleCount.textContent = `${visible.length.toLocaleString()} shown${hiddenCount ? ` · ${hiddenCount.toLocaleString()} excluded` : ''}`;
       restoreButton.hidden = hiddenCount === 0;
       accounts.innerHTML = visible.length
@@ -196,6 +225,13 @@ async function processZip(file, elements) {
       saveExclusions(excluded);
       renderAccounts();
       status.textContent = 'Restored all excluded accounts.';
+    });
+    searchInput.addEventListener('input', renderAccounts);
+    results.querySelector('#start-over').addEventListener('click', () => {
+      results.replaceChildren();
+      status.textContent = 'Ready for another export.';
+      input.value = '';
+      zone?.focus();
     });
     results.querySelector('#download')?.addEventListener('click', () => downloadCsv(filterExcluded(nonFollowers, excluded)));
     renderAccounts();

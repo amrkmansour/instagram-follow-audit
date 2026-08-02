@@ -1,6 +1,6 @@
 import JSZip from 'jszip';
 import { describe, expect, it } from 'vitest';
-import { compareLists, csvCell, filterExcluded, normalizeUsername, parseInstagramZip } from './main.js';
+import { compareLists, csvCell, filterExcluded, normalizeUsername, parseInstagramJsonFiles, parseInstagramZip } from './main.js';
 
 const follower = (value) => ({ string_list_data: [{ value }] });
 const following = (title) => ({ title });
@@ -78,5 +78,22 @@ describe('parseInstagramZip', () => {
     });
 
     await expect(parseInstagramZip(bytes)).rejects.toThrow(/does not contain/i);
+  });
+});
+
+describe('parseInstagramJsonFiles', () => {
+  it('accepts following and follower JSON files directly', async () => {
+    const files = [
+      { name: 'following.json', size: 100, text: async () => JSON.stringify({ relationships_following: [following('alice'), following('bob')] }) },
+      { name: 'followers_1.json', size: 100, text: async () => JSON.stringify([follower('alice')]) },
+    ];
+    const result = await parseInstagramJsonFiles(files);
+    expect(result.nonFollowers).toEqual(['bob']);
+  });
+
+  it('explains which direct JSON files are required', async () => {
+    await expect(parseInstagramJsonFiles([
+      { name: 'followers_1.json', size: 10, text: async () => '[]' },
+    ])).rejects.toThrow(/following\.json/i);
   });
 });
