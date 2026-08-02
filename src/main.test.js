@@ -1,6 +1,6 @@
 import JSZip from 'jszip';
 import { describe, expect, it } from 'vitest';
-import { compareLists, csvCell, normalizeUsername, parseInstagramZip } from './main.js';
+import { compareLists, csvCell, filterExcluded, normalizeUsername, parseInstagramZip } from './main.js';
 
 const follower = (value) => ({ string_list_data: [{ value }] });
 const following = (title) => ({ title });
@@ -42,6 +42,12 @@ describe('csvCell', () => {
   it('neutralizes spreadsheet formulas', () => {
     expect(csvCell('=1+1')).toBe('"\'=1+1"');
     expect(csvCell('@SUM(A1)')).toBe('"\'@SUM(A1)"');
+  });
+});
+
+describe('filterExcluded', () => {
+  it('removes browser-local exclusions from displayed and downloaded results', () => {
+    expect(filterExcluded(['celebrity', 'friend', 'brand'], new Set(['celebrity', 'brand']))).toEqual(['friend']);
   });
 });
 

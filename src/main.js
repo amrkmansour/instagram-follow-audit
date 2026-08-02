@@ -9,6 +9,8 @@ export const LIMITS = Object.freeze({
   followerFiles: 50,
 });
 
+const EXCLUSION_KEY = 'followcheck-excluded-usernames';
+
 export const normalizeUsername = (value) => {
   const username = typeof value === 'string' ? value.trim().toLowerCase() : '';
   return /^[a-z0-9._]{1,30}$/.test(username) ? username : null;
@@ -34,6 +36,21 @@ export const csvCell = (value) => {
   if (/^[=+\-@]/.test(safe)) safe = `'${safe}`;
   return `"${safe}"`;
 };
+
+export const filterExcluded = (users, excluded) => users.filter((username) => !excluded.has(username));
+
+function loadExclusions() {
+  try {
+    const values = JSON.parse(localStorage.getItem(EXCLUSION_KEY) || '[]');
+    return new Set(Array.isArray(values) ? values.map(normalizeUsername).filter(Boolean) : []);
+  } catch {
+    return new Set();
+  }
+}
+
+function saveExclusions(excluded) {
+  localStorage.setItem(EXCLUSION_KEY, JSON.stringify([...excluded].sort()));
+}
 
 const app = typeof document !== 'undefined' ? document.querySelector('#app') : null;
 
@@ -145,11 +162,43 @@ async function processZip(file, elements) {
   status.innerHTML = `<div class="working"><i></i> Reading ${escapeHtml(file.name)}…</div>`;
   try {
     const { followers, following, nonFollowers } = await parseInstagramZip(file);
+    const excluded = loadExclusions();
     results.innerHTML = `<div class="summary"><div><small>Following</small><strong>${following.size.toLocaleString()}</strong></div><div><small>Followers in file</small><strong>${followers.size.toLocaleString()}</strong></div><div><small>Not following back</small><strong>${nonFollowers.length.toLocaleString()}</strong></div></div>
       <div class="notice"><strong>Before relying on this list:</strong> confirm that you requested an <b>All time</b> export. Instagram does not include a reliable setting in the ZIP that lets this tool verify the selected date range.</div>
       <div class="result-head"><div><h2 id="results-title">Not following you back</h2><p>Based on the lists in this export. Follower counts are not checked.</p></div><button id="download" type="button">Download CSV</button></div>
-      <div class="accounts">${nonFollowers.length ? nonFollowers.map((username, index) => `<a href="https://instagram.com/${encodeURIComponent(username)}/" target="_blank" rel="noreferrer"><span>${index + 1}</span><b>@${escapeHtml(username)}</b><em>View <span aria-hidden="true">↗</span><span class="sr-only"> in a new tab</span></em></a>`).join('') : '<p class="empty">Everyone in this export follows you back.</p>'}</div>`;
-    results.querySelector('#download')?.addEventListener('click', () => downloadCsv(nonFollowers));
+      <div class="filter-bar"><span id="visible-count"></span><button id="restore-exclusions" class="text-button" type="button">Restore excluded accounts</button></div>
+      <div class="accounts" id="accounts"></div>`;
+
+    const accounts = results.querySelector('#accounts');
+    const visibleCount = results.querySelector('#visible-count');
+    const restoreButton = results.querySelector('#restore-exclusions');
+    const renderAccounts = () => {
+      const visible = filterExcluded(nonFollowers, excluded);
+      const hiddenCount = nonFollowers.length - visible.length;
+      visibleCount.textContent = `${visible.length.toLocaleString()} shown${hiddenCount ? ` · ${hiddenCount.toLocaleString()} excluded` : ''}`;
+      restoreButton.hidden = hiddenCount === 0;
+      accounts.innerHTML = visible.length
+        ? visible.map((username, index) => `<div class="account-row"><span>${index + 1}</span><a href="https://instagram.com/${encodeURIComponent(username)}/" target="_blank" rel="noreferrer"><b>@${escapeHtml(username)}</b><em>View <span aria-hidden="true">↗</span><span class="sr-only"> in a new tab</span></em></a><button type="button" data-exclude="${escapeHtml(username)}" aria-label="Exclude @${escapeHtml(username)} from future results">Exclude</button></div>`).join('')
+        : `<p class="empty">${nonFollowers.length ? 'All matching accounts are excluded.' : 'Everyone in this export follows you back.'}</p>`;
+    };
+    accounts.addEventListener('click', (event) => {
+      const button = event.target.closest('[data-exclude]');
+      if (!button) return;
+      const username = normalizeUsername(button.dataset.exclude);
+      if (!username) return;
+      excluded.add(username);
+      saveExclusions(excluded);
+      renderAccounts();
+      status.textContent = `Excluded @${username}. The preference is stored only in this browser.`;
+    });
+    restoreButton.addEventListener('click', () => {
+      excluded.clear();
+      saveExclusions(excluded);
+      renderAccounts();
+      status.textContent = 'Restored all excluded accounts.';
+    });
+    results.querySelector('#download')?.addEventListener('click', () => downloadCsv(filterExcluded(nonFollowers, excluded)));
+    renderAccounts();
     status.textContent = `Finished. Found ${nonFollowers.length.toLocaleString()} accounts that do not follow you back.`;
     results.focus({ preventScroll: true });
   } catch (error) {

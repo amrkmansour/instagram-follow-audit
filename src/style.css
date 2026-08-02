@@ -101,11 +101,16 @@ main { max-width: 1100px; margin: auto; padding: 58px 28px; }
 .result-head p { margin-bottom: 0; color: #626a64; font-size: 13px; }
 .result-head button { padding: 12px 17px; border: 0; background: #9d321f; color: white; cursor: pointer; }
 .result-head button:hover { background: #7f2819; }
-.accounts { max-height: 540px; margin-top: 18px; overflow: auto; border-top: 1px solid #d6d3ca; }
-.accounts a { display: grid; grid-template-columns: 50px 1fr auto; padding: 16px 10px; border-bottom: 1px solid #ddd9d0; color: #1e2c25; font-size: 13px; text-decoration: none; }
-.accounts a:hover { background: #f2eee5; }
-.accounts a span { color: #686e69; }
-.accounts a em { color: #8f2d1d; font-style: normal; font-weight: 600; }
+.filter-bar { display: flex; align-items: center; justify-content: space-between; min-height: 38px; margin-top: 22px; color: #626a64; font-size: 12px; }
+.text-button { padding: 6px 0; border: 0; background: transparent; color: #8f2d1d; cursor: pointer; text-decoration: underline; }
+.accounts { max-height: 540px; overflow: auto; border-top: 1px solid #d6d3ca; }
+.account-row { display: grid; grid-template-columns: 50px 1fr auto; align-items: center; border-bottom: 1px solid #ddd9d0; color: #1e2c25; font-size: 13px; }
+.account-row:hover { background: #f2eee5; }
+.account-row > span { padding-left: 10px; color: #686e69; }
+.account-row > a { display: flex; justify-content: space-between; padding: 16px 14px 16px 0; color: #1e2c25; text-decoration: none; }
+.account-row em { color: #8f2d1d; font-style: normal; font-weight: 600; }
+.account-row > button { align-self: stretch; padding: 0 14px; border: 0; border-left: 1px solid #ddd9d0; background: transparent; color: #6a4b43; cursor: pointer; }
+.account-row > button:hover { background: #e9ded5; color: #7f2819; }
 .empty { padding: 24px 10px; }
 
 footer { height: 110px; border-top: 1px solid #d8d5ca; border-bottom: 0; }
@@ -124,6 +129,7 @@ footer p { color: #6f756f; font-size: 11px; }
   .privacy-pill { display: none; }
   .summary { grid-template-columns: 1fr; }
   .result-head { align-items: flex-start; gap: 20px; }
+  .account-row { grid-template-columns: 34px 1fr auto; }
   .dropzone { min-height: 270px; }
 }
 
