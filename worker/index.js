@@ -32,7 +32,17 @@ function randomSecret() {
 }
 
 function allowedOrigin(request, env) {
-  return request.headers.get('origin') === env.ALLOWED_ORIGIN ? env.ALLOWED_ORIGIN : '';
+  const origin = request.headers.get('origin');
+  const allowedOrigins = String(env.ALLOWED_ORIGINS || env.ALLOWED_ORIGIN || '')
+    .split(',')
+    .map((value) => value.trim())
+    .filter(Boolean);
+  if (env.APP_URL) allowedOrigins.push(String(env.APP_URL).replace(/\/$/, ''));
+  return allowedOrigins.includes(origin) ? origin : '';
+}
+
+function corsFallbackOrigin(env) {
+  return String(env.ALLOWED_ORIGINS || env.ALLOWED_ORIGIN || '').split(',')[0].trim();
 }
 
 function stripeClient(env) {
@@ -79,7 +89,7 @@ export class EntitlementGate {
 }
 
 async function passwordAccess(request, env, origin) {
-  if (!origin) return json({ error: 'Origin not allowed.' }, 403, env.ALLOWED_ORIGIN);
+  if (!origin) return json({ error: 'Origin not allowed.' }, 403, corsFallbackOrigin(env));
   const contentLength = Number(request.headers.get('content-length') || 0);
   if (contentLength > 1_000) return json({ error: 'Invalid request.' }, 413, origin);
   const body = await request.json();
@@ -104,7 +114,7 @@ async function passwordAccess(request, env, origin) {
 }
 
 async function createCheckout(request, env, origin) {
-  if (!origin) return json({ error: 'Origin not allowed.' }, 403, env.ALLOWED_ORIGIN);
+  if (!origin) return json({ error: 'Origin not allowed.' }, 403, corsFallbackOrigin(env));
   const claimSecret = randomSecret();
   const claimHash = await sha256(claimSecret);
   const stripe = stripeClient(env);
@@ -119,7 +129,7 @@ async function createCheckout(request, env, origin) {
 }
 
 async function redeem(request, env, origin) {
-  if (!origin) return json({ error: 'Origin not allowed.' }, 403, env.ALLOWED_ORIGIN);
+  if (!origin) return json({ error: 'Origin not allowed.' }, 403, corsFallbackOrigin(env));
   const { sessionId, claimSecret } = await request.json();
   if (!/^cs_(test_|live_)/.test(sessionId || '') || typeof claimSecret !== 'string' || claimSecret.length < 32) {
     return json({ error: 'Invalid payment proof.' }, 400, origin);
@@ -174,7 +184,7 @@ export default {
         'vary': 'Origin',
       } });
     }
-    if (request.method === 'OPTIONS') return json({ error: 'Origin not allowed.' }, 403, env.ALLOWED_ORIGIN);
+    if (request.method === 'OPTIONS') return json({ error: 'Origin not allowed.' }, 403, corsFallbackOrigin(env));
     try {
       if (request.method === 'POST' && url.pathname === '/api/checkout-session') return await createCheckout(request, env, origin);
       if (request.method === 'POST' && url.pathname === '/api/password-access') return await passwordAccess(request, env, origin);
@@ -183,7 +193,7 @@ export default {
       return json({ error: 'Not found.' }, 404, origin);
     } catch (error) {
       console.error(JSON.stringify({ message: 'Payment API error', error: error instanceof Error ? error.message : String(error), path: url.pathname }));
-      return json({ error: 'Payment service unavailable.' }, 500, origin || env.ALLOWED_ORIGIN);
+      return json({ error: 'Payment service unavailable.' }, 500, origin || corsFallbackOrigin(env));
     }
   },
 };
