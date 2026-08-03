@@ -11,7 +11,7 @@ npm run dev
 
 Requires Node.js 22 or newer. Run `npm test` for the parser and CSV safety tests.
 
-For a deployment at a different path, set `VITE_BASE_PATH` before building. It defaults to `/instagram-follow-audit/` for this GitHub Pages repository.
+The production site uses `https://follow-check.com/`. For a deployment at a different path, set `VITE_BASE_PATH` before building; it defaults to `/`.
 
 ## Privacy
 
