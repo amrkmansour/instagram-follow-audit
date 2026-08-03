@@ -1,6 +1,10 @@
 name = "followcheck-payments"
 main = "worker/index.js"
 compatibility_date = "2026-08-02"
+compatibility_flags = ["nodejs_compat"]
+
+[observability]
+enabled = true
 
 [vars]
 ALLOWED_ORIGIN = "https://amrkmansour.github.io"

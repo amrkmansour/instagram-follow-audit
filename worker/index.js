@@ -21,6 +21,11 @@ async function sha256(value) {
   return [...new Uint8Array(digest)].map((byte) => byte.toString(16).padStart(2, '0')).join('');
 }
 
+async function secureEqual(provided, expected) {
+  const [providedHash, expectedHash] = await Promise.all([sha256(provided), sha256(expected)]);
+  return crypto.subtle.timingSafeEqual(encoder.encode(providedHash), encoder.encode(expectedHash));
+}
+
 function randomSecret() {
   const bytes = crypto.getRandomValues(new Uint8Array(32));
   return btoa(String.fromCharCode(...bytes)).replaceAll('+', '-').replaceAll('/', '_').replaceAll('=', '');
@@ -44,6 +49,22 @@ export class EntitlementGate {
 
   async fetch(request) {
     const event = await request.json();
+    if (event.action === 'password-attempt') {
+      const now = Date.now();
+      const windowStarted = await this.state.storage.get('passwordWindowStarted');
+      const attempts = await this.state.storage.get('passwordAttempts') || 0;
+      const activeWindow = typeof windowStarted === 'number' && now - windowStarted < 15 * 60 * 1000;
+      if (activeWindow && attempts >= 5) return json({ error: 'Too many attempts. Try again in 15 minutes.' }, 429);
+      await this.state.storage.put({
+        passwordWindowStarted: activeWindow ? windowStarted : now,
+        passwordAttempts: activeWindow ? attempts + 1 : 1,
+      });
+      return json({ allowed: true });
+    }
+    if (event.action === 'password-success') {
+      await this.state.storage.delete(['passwordWindowStarted', 'passwordAttempts']);
+      return json({ recorded: true });
+    }
     if (event.action === 'paid') {
       await this.state.storage.put('paid', true);
       return json({ recorded: true });
@@ -55,6 +76,31 @@ export class EntitlementGate {
       return json({ redeemed: true });
     });
   }
+}
+
+async function passwordAccess(request, env, origin) {
+  if (!origin) return json({ error: 'Origin not allowed.' }, 403, env.ALLOWED_ORIGIN);
+  const contentLength = Number(request.headers.get('content-length') || 0);
+  if (contentLength > 1_000) return json({ error: 'Invalid request.' }, 413, origin);
+  const body = await request.json();
+  if (typeof body?.password !== 'string' || body.password.length > 128) return json({ error: 'Invalid request.' }, 400, origin);
+
+  const address = request.headers.get('cf-connecting-ip') || 'unknown';
+  const gate = env.ENTITLEMENT_GATE.get(env.ENTITLEMENT_GATE.idFromName(`password:${address}`));
+  const rateResponse = await gate.fetch('https://entitlement.internal/', {
+    method: 'POST',
+    body: JSON.stringify({ action: 'password-attempt' }),
+  });
+  if (!rateResponse.ok) return json(await rateResponse.json(), rateResponse.status, origin);
+
+  if (!await secureEqual(body.password, env.AUDIT_ACCESS_PASSWORD)) {
+    return json({ error: 'Incorrect access password.' }, 401, origin);
+  }
+  await gate.fetch('https://entitlement.internal/', {
+    method: 'POST',
+    body: JSON.stringify({ action: 'password-success' }),
+  });
+  return json({ unlocked: true }, 200, origin);
 }
 
 async function createCheckout(request, env, origin) {
@@ -131,11 +177,12 @@ export default {
     if (request.method === 'OPTIONS') return json({ error: 'Origin not allowed.' }, 403, env.ALLOWED_ORIGIN);
     try {
       if (request.method === 'POST' && url.pathname === '/api/checkout-session') return await createCheckout(request, env, origin);
+      if (request.method === 'POST' && url.pathname === '/api/password-access') return await passwordAccess(request, env, origin);
       if (request.method === 'POST' && url.pathname === '/api/redeem') return await redeem(request, env, origin);
       if (request.method === 'POST' && url.pathname === '/api/webhook') return await webhook(request, env);
       return json({ error: 'Not found.' }, 404, origin);
     } catch (error) {
-      console.error('Payment API error', error instanceof Error ? error.message : error);
+      console.error(JSON.stringify({ message: 'Payment API error', error: error instanceof Error ? error.message : String(error), path: url.pathname }));
       return json({ error: 'Payment service unavailable.' }, 500, origin || env.ALLOWED_ORIGIN);
     }
   },

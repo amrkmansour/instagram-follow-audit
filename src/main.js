@@ -1,6 +1,6 @@
 import JSZip from 'jszip';
 import './style.css';
-import { captureCheckoutReturn, getPendingCheckout, redeemAudit, startCheckout } from './payments.js';
+import { captureCheckoutReturn, getPendingCheckout, hasPasswordAccess, redeemAudit, startCheckout, unlockWithPassword } from './payments.js';
 
 export const LIMITS = Object.freeze({
   archiveBytes: 50 * 1024 * 1024,
@@ -76,9 +76,10 @@ if (app) {
       <section class="payment-section" aria-labelledby="payment-title">
         <div class="section-heading"><span aria-hidden="true">02</span><div><h2 id="payment-title">Unlock one audit</h2><p>One secure payment. No account or subscription.</p></div></div>
         <div class="payment-card"><div><strong>$1.99 <small>USD</small></strong><p>Includes one browser-based audit and CSV download. Payment is handled by Stripe.</p></div><button id="checkout" type="button">Pay securely with Stripe <span aria-hidden="true">→</span></button></div>
+        <form id="password-form" class="password-form"><label for="access-password">Have an access password?</label><div><input id="access-password" name="password" type="password" autocomplete="current-password" required /><button type="submit">Unlock audit</button></div></form>
         <div id="payment-status" class="status" role="status" aria-live="polite" aria-atomic="true"></div>
       </section>
-      <section class="upload-section" aria-labelledby="upload-title">
+      <section class="upload-section" id="upload-section" aria-labelledby="upload-title" hidden>
         <div class="section-heading"><span aria-hidden="true">03</span><div><h2 id="upload-title">Drop your export</h2><p>We’ll compare the two lists right here in your browser.</p></div></div>
         <label class="dropzone" id="dropzone" tabindex="0" role="button" aria-describedby="upload-help">
           <input type="file" id="file" accept=".zip,.json,application/zip,application/json" multiple />
@@ -96,13 +97,26 @@ if (app) {
   const results = document.querySelector('#results');
   const checkoutButton = document.querySelector('#checkout');
   const paymentStatus = document.querySelector('#payment-status');
+  const passwordForm = document.querySelector('#password-form');
+  const passwordInput = document.querySelector('#access-password');
+  const uploadSection = document.querySelector('#upload-section');
+
+  const revealUpload = (message) => {
+    uploadSection.hidden = false;
+    paymentStatus.innerHTML = `<div class="working"><i></i> ${escapeHtml(message)}</div>`;
+    uploadSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  };
 
   const returnedCheckout = captureCheckoutReturn();
   const pendingCheckout = returnedCheckout || getPendingCheckout();
   if (pendingCheckout) {
-    paymentStatus.innerHTML = '<div class="working"><i></i> Payment received. Choose a valid Instagram export to use this audit.</div>';
+    revealUpload('Payment received. Choose a valid Instagram export to use this audit.');
     checkoutButton.textContent = 'Payment ready';
     checkoutButton.disabled = true;
+    passwordForm.hidden = true;
+  } else if (hasPasswordAccess()) {
+    revealUpload('Access password accepted. The audit is unlocked in this tab.');
+    passwordForm.hidden = true;
   } else if (new URLSearchParams(window.location.search).get('checkout') === 'cancelled') {
     paymentStatus.textContent = 'Checkout was canceled. You have not been charged.';
   }
@@ -114,6 +128,22 @@ if (app) {
     } catch (error) {
       checkoutButton.disabled = false;
       showError(paymentStatus, error instanceof Error ? error.message : 'Could not start checkout.');
+    }
+  });
+  passwordForm.addEventListener('submit', async (event) => {
+    event.preventDefault();
+    const submitButton = passwordForm.querySelector('button');
+    submitButton.disabled = true;
+    paymentStatus.innerHTML = '<div class="working"><i></i> Checking access password…</div>';
+    try {
+      await unlockWithPassword(passwordInput.value);
+      passwordInput.value = '';
+      passwordForm.hidden = true;
+      revealUpload('Access password accepted. The audit is unlocked in this tab.');
+    } catch (error) {
+      submitButton.disabled = false;
+      passwordInput.select();
+      showError(paymentStatus, error instanceof Error ? error.message : 'Could not verify the password.');
     }
   });
 
@@ -217,7 +247,7 @@ async function processFiles(fileList, elements) {
       ? await parseInstagramZip(files[0])
       : await parseInstagramJsonFiles(files);
     status.innerHTML = '<div class="working"><i></i> Verifying payment…</div>';
-    await redeemAudit(getPendingCheckout());
+    if (!hasPasswordAccess()) await redeemAudit(getPendingCheckout());
     const excluded = loadExclusions();
     results.innerHTML = `<div class="summary"><div><small>Following</small><strong>${following.size.toLocaleString()}</strong></div><div><small>Followers in file</small><strong>${followers.size.toLocaleString()}</strong></div><div><small>Not following back</small><strong>${nonFollowers.length.toLocaleString()}</strong></div></div>
       <div class="notice"><strong>Before relying on this list:</strong> confirm that you requested an <b>All time</b> export. Instagram does not include a reliable setting in the ZIP that lets this tool verify the selected date range.</div>

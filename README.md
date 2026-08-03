@@ -26,6 +26,7 @@ For local payment development, copy `.env.example` to `.env.local`, set its publ
 ```bash
 npx wrangler secret put STRIPE_SECRET_KEY
 npx wrangler secret put STRIPE_WEBHOOK_SECRET
+npx wrangler secret put AUDIT_ACCESS_PASSWORD
 npm run payments:deploy
 ```
 

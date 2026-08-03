@@ -1,4 +1,5 @@
 const CHECKOUT_KEY = 'followcheck-checkout';
+const PASSWORD_ACCESS_KEY = 'followcheck-password-access';
 
 const apiUrl = (path) => {
   const origin = String(import.meta.env.VITE_PAYMENTS_API_URL || '').replace(/\/$/, '');
@@ -29,6 +30,21 @@ export function getPendingCheckout(storage = sessionStorage) {
   } catch {
     return null;
   }
+}
+
+export function hasPasswordAccess(storage = sessionStorage) {
+  return storage.getItem(PASSWORD_ACCESS_KEY) === 'granted';
+}
+
+export async function unlockWithPassword(password, fetchImpl = fetch, storage = sessionStorage) {
+  const response = await fetchImpl(apiUrl('/api/password-access'), {
+    method: 'POST',
+    headers: { 'content-type': 'application/json' },
+    body: JSON.stringify({ password }),
+  });
+  const body = await response.json().catch(() => ({}));
+  if (!response.ok || body.unlocked !== true) throw new Error(body.error || 'Incorrect access password.');
+  storage.setItem(PASSWORD_ACCESS_KEY, 'granted');
 }
 
 export async function startCheckout(fetchImpl = fetch) {
