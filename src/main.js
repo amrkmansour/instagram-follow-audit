@@ -75,7 +75,7 @@ if (app) {
       </section>
       <section class="payment-section" aria-labelledby="payment-title">
         <div class="section-heading"><span aria-hidden="true">02</span><div><h2 id="payment-title">Unlock one audit</h2><p>One secure payment. No account or subscription.</p></div></div>
-        <div class="payment-card"><div><strong>$1.99 <small>USD</small></strong><p>Includes one browser-based audit and CSV download. Payment is handled by Stripe.</p></div><button id="checkout" type="button">Pay securely with Stripe <span aria-hidden="true">→</span></button></div>
+        <div class="payment-card"><div><strong>$2.99 <small>USD</small></strong><p>Includes one browser-based audit and CSV download. Payment is handled by Stripe.</p></div><button id="checkout" type="button">Pay securely with Stripe <span aria-hidden="true">→</span></button></div>
         <form id="password-form" class="password-form"><label for="access-password">Have an access password?</label><div><input id="access-password" name="password" type="password" autocomplete="current-password" required /><button type="submit">Unlock audit</button></div></form>
         <div id="payment-status" class="status" role="status" aria-live="polite" aria-atomic="true"></div>
       </section>

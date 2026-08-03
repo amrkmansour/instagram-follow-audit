@@ -140,7 +140,7 @@ async function redeem(request, env, origin) {
   const validPurchase = session.payment_status === 'paid'
     && session.mode === 'payment'
     && session.metadata?.product === 'instagram_follow_audit'
-    && session.amount_total === 199
+    && session.amount_total === 299
     && session.currency === 'usd';
   if (!validClaim || !validPurchase) return json({ error: 'Payment could not be verified.' }, 402, origin);
 

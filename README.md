@@ -19,7 +19,7 @@ Uploaded ZIP files never leave the visitor's device. No Instagram password or ac
 
 ## Payments
 
-One audit costs $1.99 USD through Stripe-hosted Checkout. The static frontend sends no uploaded files, parsed usernames, or audit results to the payment Worker. See [STRIPE_INTEGRATION_PLAN.md](STRIPE_INTEGRATION_PLAN.md) for architecture, security boundaries, configuration, and launch checks.
+One audit costs $2.99 USD through Stripe-hosted Checkout. The static frontend sends no uploaded files, parsed usernames, or audit results to the payment Worker. See [STRIPE_INTEGRATION_PLAN.md](STRIPE_INTEGRATION_PLAN.md) for architecture, security boundaries, configuration, and launch checks.
 
 For local payment development, copy `.env.example` to `.env.local`, set its public Worker URL, and run `npm run dev`. Configure Worker values without committing secrets:
 
@@ -30,7 +30,7 @@ npx wrangler secret put AUDIT_ACCESS_PASSWORD
 npm run payments:deploy
 ```
 
-The non-secret Price ID is configured as `STRIPE_PRICE_ID` in `wrangler.toml`. Use test-mode secrets and a test-mode $1.99 Price until the launch checks pass. `ALLOWED_ORIGIN` and `APP_URL` lock requests and redirects to the published app; use a separate Wrangler environment for local development.
+The non-secret Price ID is configured as `STRIPE_PRICE_ID` in `wrangler.toml`. Use test-mode secrets and a test-mode $2.99 Price until the launch checks pass. `ALLOWED_ORIGIN` and `APP_URL` lock requests and redirects to the published app; use a separate Wrangler environment for local development.
 
 ## Scope
 

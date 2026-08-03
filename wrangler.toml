@@ -7,9 +7,9 @@ compatibility_flags = ["nodejs_compat"]
 enabled = true
 
 [vars]
-ALLOWED_ORIGINS = "https://follow-check.com,http://follow-check.com"
-APP_URL = "http://follow-check.com"
-STRIPE_PRICE_ID = "price_1U0BbtC2qM4SAqsB7yq5dAKN"
+ALLOWED_ORIGINS = "https://follow-check.com"
+APP_URL = "https://follow-check.com"
+STRIPE_PRICE_ID = "price_1U0S56C2qM4SAqsBDuyPQmsA"
 
 [[durable_objects.bindings]]
 name = "ENTITLEMENT_GATE"

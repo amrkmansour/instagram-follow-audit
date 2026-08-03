@@ -58,7 +58,7 @@ export async function startCheckout(fetchImpl = fetch) {
 }
 
 export async function redeemAudit(checkout, fetchImpl = fetch, storage = sessionStorage) {
-  if (!checkout) throw new Error('Pay $1.99 to run this audit.');
+  if (!checkout) throw new Error('Pay $2.99 to run this audit.');
   const response = await fetchImpl(apiUrl('/api/redeem'), {
     method: 'POST',
     headers: { 'content-type': 'application/json' },
