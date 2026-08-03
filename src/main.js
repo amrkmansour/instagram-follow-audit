@@ -68,7 +68,7 @@ if (app) {
         <div class="quick-settings" aria-label="Required export settings"><span>✓ Followers and following</span><span>✓ All time</span><span>✓ JSON format</span></div>
         <ol class="steps">
           <li><b aria-hidden="true">1</b><h3>Open Accounts Center</h3><p>Tap the button below, or go to Instagram Settings → Accounts Center → Your information and permissions.</p></li>
-          <li class="important"><b aria-hidden="true">2</b><h3>Request the right data</h3><p>Export your information → Create export → Export to device. Choose only <strong>Followers and following</strong>, <strong>All time</strong>, and <strong>JSON</strong>.</p></li>
+          <li class="important"><b aria-hidden="true">2</b><h3>Request the right data</h3><p>Export your information → Create export → Export to device. Choose <strong class="only-emphasis">only</strong> <strong>Followers and following</strong>, <strong>All time</strong>, and <strong>JSON</strong>.</p></li>
           <li><b aria-hidden="true">3</b><h3>Use the downloaded file</h3><p>Instagram will notify you when it’s ready. Download it, then come back and drop the ZIP below—no need to unzip it.</p></li>
         </ol>
         <div class="instruction-actions"><a class="primary-link" href="https://accountscenter.instagram.com/info_and_permissions/" target="_blank" rel="noreferrer">Open Instagram Accounts Center <span aria-hidden="true">↗</span><span class="sr-only"> (opens in a new tab)</span></a><a class="help-link" href="https://www.facebook.com/help/181231772500920" target="_blank" rel="noreferrer">Need help? View Meta’s guide <span aria-hidden="true">↗</span><span class="sr-only"> (opens in a new tab)</span></a></div>
