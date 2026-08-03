@@ -1,5 +1,6 @@
 import JSZip from 'jszip';
 import './style.css';
+import { captureCheckoutReturn, getPendingCheckout, redeemAudit, startCheckout } from './payments.js';
 
 export const LIMITS = Object.freeze({
   archiveBytes: 50 * 1024 * 1024,
@@ -72,8 +73,13 @@ if (app) {
         </ol>
         <div class="instruction-actions"><a class="primary-link" href="https://accountscenter.instagram.com/info_and_permissions/" target="_blank" rel="noreferrer">Open Instagram Accounts Center <span aria-hidden="true">↗</span><span class="sr-only"> (opens in a new tab)</span></a><a class="help-link" href="https://www.facebook.com/help/181231772500920" target="_blank" rel="noreferrer">Need help? View Meta’s guide <span aria-hidden="true">↗</span><span class="sr-only"> (opens in a new tab)</span></a></div>
       </section>
+      <section class="payment-section" aria-labelledby="payment-title">
+        <div class="section-heading"><span aria-hidden="true">02</span><div><h2 id="payment-title">Unlock one audit</h2><p>One secure payment. No account or subscription.</p></div></div>
+        <div class="payment-card"><div><strong>$1.99 <small>USD</small></strong><p>Includes one browser-based audit and CSV download. Payment is handled by Stripe.</p></div><button id="checkout" type="button">Pay securely with Stripe <span aria-hidden="true">→</span></button></div>
+        <div id="payment-status" class="status" role="status" aria-live="polite" aria-atomic="true"></div>
+      </section>
       <section class="upload-section" aria-labelledby="upload-title">
-        <div class="section-heading"><span aria-hidden="true">02</span><div><h2 id="upload-title">Drop your export</h2><p>We’ll compare the two lists right here in your browser.</p></div></div>
+        <div class="section-heading"><span aria-hidden="true">03</span><div><h2 id="upload-title">Drop your export</h2><p>We’ll compare the two lists right here in your browser.</p></div></div>
         <label class="dropzone" id="dropzone" tabindex="0" role="button" aria-describedby="upload-help">
           <input type="file" id="file" accept=".zip,.json,application/zip,application/json" multiple />
           <span class="upload-icon" aria-hidden="true">↑</span><strong>Drop your Instagram file here</strong><span>or <u>choose files</u> from your device</span><small id="upload-help">ZIP recommended · JSON files also accepted · Maximum 50 MB</small>
@@ -88,6 +94,28 @@ if (app) {
   const zone = document.querySelector('#dropzone');
   const status = document.querySelector('#status');
   const results = document.querySelector('#results');
+  const checkoutButton = document.querySelector('#checkout');
+  const paymentStatus = document.querySelector('#payment-status');
+
+  const returnedCheckout = captureCheckoutReturn();
+  const pendingCheckout = returnedCheckout || getPendingCheckout();
+  if (pendingCheckout) {
+    paymentStatus.innerHTML = '<div class="working"><i></i> Payment received. Choose a valid Instagram export to use this audit.</div>';
+    checkoutButton.textContent = 'Payment ready';
+    checkoutButton.disabled = true;
+  } else if (new URLSearchParams(window.location.search).get('checkout') === 'cancelled') {
+    paymentStatus.textContent = 'Checkout was canceled. You have not been charged.';
+  }
+  checkoutButton.addEventListener('click', async () => {
+    checkoutButton.disabled = true;
+    paymentStatus.innerHTML = '<div class="working"><i></i> Opening secure checkout…</div>';
+    try {
+      await startCheckout();
+    } catch (error) {
+      checkoutButton.disabled = false;
+      showError(paymentStatus, error instanceof Error ? error.message : 'Could not start checkout.');
+    }
+  });
 
   const stopDrag = (event) => {
     event.preventDefault();
@@ -188,6 +216,8 @@ async function processFiles(fileList, elements) {
     const { followers, following, nonFollowers } = containsZip
       ? await parseInstagramZip(files[0])
       : await parseInstagramJsonFiles(files);
+    status.innerHTML = '<div class="working"><i></i> Verifying payment…</div>';
+    await redeemAudit(getPendingCheckout());
     const excluded = loadExclusions();
     results.innerHTML = `<div class="summary"><div><small>Following</small><strong>${following.size.toLocaleString()}</strong></div><div><small>Followers in file</small><strong>${followers.size.toLocaleString()}</strong></div><div><small>Not following back</small><strong>${nonFollowers.length.toLocaleString()}</strong></div></div>
       <div class="notice"><strong>Before relying on this list:</strong> confirm that you requested an <b>All time</b> export. Instagram does not include a reliable setting in the ZIP that lets this tool verify the selected date range.</div>
@@ -238,12 +268,12 @@ async function processFiles(fileList, elements) {
     status.textContent = `Finished. Found ${nonFollowers.length.toLocaleString()} accounts that do not follow you back.`;
     results.focus({ preventScroll: true });
   } catch (error) {
-    showError(status, error instanceof Error ? error.message : 'We could not read this ZIP.');
+    showError(status, error instanceof Error ? error.message : 'We could not complete this audit.');
   }
 }
 
 function showError(status, message) {
-  status.innerHTML = `<div class="error" role="alert"><strong>Couldn’t read that file.</strong> ${escapeHtml(message)}</div>`;
+  status.innerHTML = `<div class="error" role="alert"><strong>Couldn’t complete the audit.</strong> ${escapeHtml(message)}</div>`;
 }
 
 function escapeHtml(value) {

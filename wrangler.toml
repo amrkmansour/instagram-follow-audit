@@ -1,0 +1,16 @@
+name = "followcheck-payments"
+main = "worker/index.js"
+compatibility_date = "2026-08-02"
+
+[vars]
+ALLOWED_ORIGIN = "https://amrkmansour.github.io"
+APP_URL = "https://amrkmansour.github.io/instagram-follow-audit"
+STRIPE_PRICE_ID = "price_1U0BbtC2qM4SAqsB7yq5dAKN"
+
+[[durable_objects.bindings]]
+name = "ENTITLEMENT_GATE"
+class_name = "EntitlementGate"
+
+[[migrations]]
+tag = "v1"
+new_sqlite_classes = ["EntitlementGate"]
