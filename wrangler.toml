@@ -1,5 +1,6 @@
 name = "followcheck-payments"
 main = "worker/index.js"
+workers_dev = true
 compatibility_date = "2026-08-02"
 compatibility_flags = ["nodejs_compat"]
 
@@ -7,9 +8,13 @@ compatibility_flags = ["nodejs_compat"]
 enabled = true
 
 [vars]
-ALLOWED_ORIGINS = "https://follow-check.com"
+ALLOWED_ORIGINS = "https://follow-check.com,https://www.follow-check.com"
 APP_URL = "https://follow-check.com"
 STRIPE_PRICE_ID = "price_1U0S56C2qM4SAqsBDuyPQmsA"
+
+[[routes]]
+pattern = "api.follow-check.com"
+custom_domain = true
 
 [[durable_objects.bindings]]
 name = "ENTITLEMENT_GATE"

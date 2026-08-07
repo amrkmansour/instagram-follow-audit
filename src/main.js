@@ -169,7 +169,7 @@ if (app) {
       await startCheckout();
     } catch (error) {
       checkoutButton.disabled = false;
-      showError(paymentStatus, error instanceof Error ? error.message : 'Could not start checkout.');
+      showPaymentError(paymentStatus, error instanceof Error ? error.message : 'Could not start checkout.');
     }
   });
   passwordForm.addEventListener('submit', async (event) => {
@@ -396,6 +396,10 @@ async function processFiles(fileList, elements) {
 
 function showError(status, message) {
   status.innerHTML = `<div class="error" role="alert"><strong>Couldn’t complete the audit.</strong> ${escapeHtml(message)}</div>`;
+}
+
+function showPaymentError(status, message) {
+  status.innerHTML = `<div class="error" role="alert"><strong>Couldn’t open secure checkout.</strong> ${escapeHtml(message)}</div>`;
 }
 
 function escapeHtml(value) {

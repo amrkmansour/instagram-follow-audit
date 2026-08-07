@@ -48,10 +48,15 @@ export async function unlockWithPassword(password, fetchImpl = fetch, storage = 
 }
 
 export async function startCheckout(fetchImpl = fetch) {
-  const response = await fetchImpl(apiUrl('/api/checkout-session'), {
-    method: 'POST',
-    headers: { 'content-type': 'application/json' },
-  });
+  let response;
+  try {
+    response = await fetchImpl(apiUrl('/api/checkout-session'), {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+    });
+  } catch {
+    throw new Error('Could not connect to secure checkout. Check your connection or content-blocking settings and try again.');
+  }
   const body = await response.json().catch(() => ({}));
   if (!response.ok || !body.url) throw new Error(body.error || 'Could not start secure checkout.');
   window.location.assign(body.url);
