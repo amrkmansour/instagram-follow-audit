@@ -10,7 +10,7 @@ export const LIMITS = Object.freeze({
   followerFiles: 50,
 });
 
-const EXCLUSION_KEY = 'followcheck-excluded-usernames';
+const LEGACY_EXCLUSION_KEY = 'followcheck-excluded-usernames';
 
 export const normalizeUsername = (value) => {
   const username = typeof value === 'string' ? value.trim().toLowerCase() : '';
@@ -40,22 +40,14 @@ export const csvCell = (value) => {
 
 export const filterExcluded = (users, excluded) => users.filter((username) => !excluded.has(username));
 
-function loadExclusions() {
-  try {
-    const values = JSON.parse(localStorage.getItem(EXCLUSION_KEY) || '[]');
-    return new Set(Array.isArray(values) ? values.map(normalizeUsername).filter(Boolean) : []);
-  } catch {
-    return new Set();
-  }
-}
-
-function saveExclusions(excluded) {
-  localStorage.setItem(EXCLUSION_KEY, JSON.stringify([...excluded].sort()));
-}
-
 const app = typeof document !== 'undefined' ? document.querySelector('#app') : null;
 
 if (app) {
+  try {
+    localStorage.removeItem(LEGACY_EXCLUSION_KEY);
+  } catch {
+    // The audit works without browser storage; some privacy modes block access to it entirely.
+  }
   app.innerHTML = `
     <nav aria-label="Main navigation"><a class="brand" href="#top">Follow<span>Check</span></a><div class="privacy-pill"><i></i> Your file stays on your device</div></nav>
     <main id="top">
@@ -70,6 +62,10 @@ if (app) {
           <li><b aria-hidden="true">3</b><h3>Upload the file you receive</h3><p>Return here and upload the file Instagram provides. It stays on your device.</p></li>
           <li><b aria-hidden="true">4</b><h3>See who doesn’t follow you back</h3><p>Get a clear list of the accounts you follow that don’t follow you back.</p></li>
         </ol>
+        <aside class="privacy-disclaimer" aria-label="Data privacy">
+          <strong>We don’t store your Instagram data.</strong>
+          <p>Your export and audit results are processed only in your browser. They are never uploaded or sent to FollowCheck, and they disappear when you close or refresh the page. Payment is handled separately by Stripe.</p>
+        </aside>
       </section>
       <section class="payment-section" aria-labelledby="payment-title">
         <div class="section-heading"><span aria-hidden="true">02</span><div><h2 id="payment-title">Unlock one audit</h2><p>One secure payment. No account or subscription.</p></div></div>
@@ -276,7 +272,7 @@ async function processFiles(fileList, elements) {
       : await parseInstagramJsonFiles(files);
     status.innerHTML = '<div class="working"><i></i> Verifying payment…</div>';
     if (!hasPasswordAccess()) await redeemAudit(getPendingCheckout());
-    const excluded = loadExclusions();
+    const excluded = new Set();
     results.innerHTML = `<div class="summary"><div><small>Following</small><strong>${following.size.toLocaleString()}</strong></div><div><small>Followers in file</small><strong>${followers.size.toLocaleString()}</strong></div><div><small>Not following back</small><strong>${nonFollowers.length.toLocaleString()}</strong></div></div>
       <div class="notice"><strong>Before relying on this list:</strong> confirm that you requested an <b>All time</b> export. Instagram does not include a reliable setting in the ZIP that lets this tool verify the selected date range.</div>
       <div class="result-head"><div><h2 id="results-title">Not following you back</h2><p>Based on the lists in this export. Follower counts are not checked.</p></div><div class="result-actions"><button id="start-over" class="secondary-button" type="button">Start over</button><button id="download" type="button">Download CSV</button></div></div>
@@ -295,7 +291,7 @@ async function processFiles(fileList, elements) {
       visibleCount.textContent = `${visible.length.toLocaleString()} shown${hiddenCount ? ` · ${hiddenCount.toLocaleString()} excluded` : ''}`;
       restoreButton.hidden = hiddenCount === 0;
       accounts.innerHTML = visible.length
-        ? visible.map((username, index) => `<div class="account-row"><span>${index + 1}</span><a href="https://instagram.com/${encodeURIComponent(username)}/" target="_blank" rel="noreferrer"><b>@${escapeHtml(username)}</b><em>View <span aria-hidden="true">↗</span><span class="sr-only"> in a new tab</span></em></a><button type="button" data-exclude="${escapeHtml(username)}" aria-label="Exclude @${escapeHtml(username)} from future results">Exclude</button></div>`).join('')
+        ? visible.map((username, index) => `<div class="account-row"><span>${index + 1}</span><a href="https://instagram.com/${encodeURIComponent(username)}/" target="_blank" rel="noreferrer"><b>@${escapeHtml(username)}</b><em>View <span aria-hidden="true">↗</span><span class="sr-only"> in a new tab</span></em></a><button type="button" data-exclude="${escapeHtml(username)}" aria-label="Exclude @${escapeHtml(username)} from these results">Exclude</button></div>`).join('')
         : `<p class="empty">${nonFollowers.length ? 'All matching accounts are excluded.' : 'Everyone in this export follows you back.'}</p>`;
     };
     accounts.addEventListener('click', (event) => {
@@ -304,13 +300,11 @@ async function processFiles(fileList, elements) {
       const username = normalizeUsername(button.dataset.exclude);
       if (!username) return;
       excluded.add(username);
-      saveExclusions(excluded);
       renderAccounts();
-      status.textContent = `Excluded @${username}. The preference is stored only in this browser.`;
+      status.textContent = `Excluded @${username} from these results.`;
     });
     restoreButton.addEventListener('click', () => {
       excluded.clear();
-      saveExclusions(excluded);
       renderAccounts();
       status.textContent = 'Restored all excluded accounts.';
     });
