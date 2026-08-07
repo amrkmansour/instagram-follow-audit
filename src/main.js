@@ -60,7 +60,6 @@ if (app) {
     <nav aria-label="Main navigation"><a class="brand" href="#top">Follow<span>Check</span></a><div class="privacy-pill"><i></i> Your file stays on your device</div></nav>
     <main id="top">
       <section class="hero" aria-labelledby="page-title">
-        <div class="eyebrow">Instagram follow audit</div>
         <h1 id="page-title">See who doesn't <em>follow you back.</em></h1>
       </section>
       <section class="instructions" aria-labelledby="instructions-title">

@@ -45,7 +45,6 @@ nav, footer {
 
 main { max-width: 1100px; margin: auto; padding: 58px 28px; }
 .hero { max-width: 100%; margin-bottom: 58px; }
-.eyebrow { margin-bottom: 15px; color: #4a6556; font-size: 11px; font-weight: 700; letter-spacing: 2.2px; text-transform: uppercase; }
 .hero h1, .section-heading h2, .dropzone > strong, .summary strong, .result-head h2 {
   font-family: Georgia, "Times New Roman", serif;
   font-weight: 400;
