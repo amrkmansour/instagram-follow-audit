@@ -63,10 +63,10 @@ if (app) {
         <h1 id="page-title">See who doesn't <em>follow you back.</em></h1>
       </section>
       <section class="instructions" aria-labelledby="instructions-title">
-        <div class="section-heading"><span aria-hidden="true">01</span><div><h2 id="instructions-title">How it works</h2><p>Request your data, unlock the tool, and see your results.</p></div></div>
+        <div class="section-heading"><span aria-hidden="true">01</span><div><h2 id="instructions-title">How it works</h2><p>Unlock the tool, request your data, and see your results.</p></div></div>
         <ol class="steps">
-          <li><b aria-hidden="true">1</b><h3>Request your data from Instagram</h3><p>Instagram will prepare your account data—often in just 5–10 minutes.</p></li>
-          <li><b aria-hidden="true">2</b><h3>Unlock your audit for $2.99</h3><p>Pay once to access the tool and get simple, step-by-step instructions for requesting the right file from Instagram.</p></li>
+          <li><b aria-hidden="true">1</b><h3>Unlock your audit for $2.99</h3><p>Pay once to access the tool and get simple, step-by-step instructions for requesting the right file from Instagram.</p></li>
+          <li><b aria-hidden="true">2</b><h3>Request your data from Instagram</h3><p>Instagram will prepare your account data—often in just 5–10 minutes.</p></li>
           <li><b aria-hidden="true">3</b><h3>Upload the file you receive</h3><p>Return here and upload the file Instagram provides. It stays on your device.</p></li>
           <li><b aria-hidden="true">4</b><h3>See who doesn’t follow you back</h3><p>Get a clear list of the accounts you follow that don’t follow you back.</p></li>
         </ol>
