@@ -113,19 +113,35 @@ async function passwordAccess(request, env, origin) {
   return json({ unlocked: true }, 200, origin);
 }
 
-async function createCheckout(request, env, origin) {
-  if (!origin) return json({ error: 'Origin not allowed.' }, 403, corsFallbackOrigin(env));
+async function createStripeCheckout(env) {
   const claimSecret = randomSecret();
   const claimHash = await sha256(claimSecret);
   const stripe = stripeClient(env);
-  const session = await stripe.checkout.sessions.create({
+  return stripe.checkout.sessions.create({
     mode: 'payment',
     line_items: [{ price: env.STRIPE_PRICE_ID, quantity: 1 }],
     success_url: `${env.APP_URL}/?checkout=success&session_id={CHECKOUT_SESSION_ID}&claim=${encodeURIComponent(claimSecret)}`,
     cancel_url: `${env.APP_URL}/?checkout=cancelled#payment-title`,
     metadata: { product: 'instagram_follow_audit', claim_hash: claimHash },
   });
+}
+
+async function createCheckout(request, env, origin) {
+  if (!origin) return json({ error: 'Origin not allowed.' }, 403, corsFallbackOrigin(env));
+  const session = await createStripeCheckout(env);
   return json({ url: session.url }, 200, origin);
+}
+
+async function redirectToCheckout(env) {
+  const session = await createStripeCheckout(env);
+  return new Response(null, {
+    status: 303,
+    headers: {
+      location: session.url,
+      'cache-control': 'no-store',
+      'referrer-policy': 'no-referrer',
+    },
+  });
 }
 
 async function redeem(request, env, origin) {
@@ -186,6 +202,7 @@ export default {
     }
     if (request.method === 'OPTIONS') return json({ error: 'Origin not allowed.' }, 403, corsFallbackOrigin(env));
     try {
+      if (request.method === 'GET' && url.pathname === '/api/checkout') return await redirectToCheckout(env);
       if (request.method === 'POST' && url.pathname === '/api/checkout-session') return await createCheckout(request, env, origin);
       if (request.method === 'POST' && url.pathname === '/api/password-access') return await passwordAccess(request, env, origin);
       if (request.method === 'POST' && url.pathname === '/api/redeem') return await redeem(request, env, origin);

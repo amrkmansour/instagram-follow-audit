@@ -1,6 +1,12 @@
 const CHECKOUT_KEY = 'followcheck-checkout';
 const PASSWORD_ACCESS_KEY = 'followcheck-password-access';
 
+export function checkoutRedirectUrl() {
+  const configured = String(import.meta.env.VITE_PAYMENTS_CHECKOUT_URL || '').trim();
+  if (!configured) throw new Error('Payments are not configured yet.');
+  return configured;
+}
+
 const configuredApiOrigins = () => [...new Set([
   import.meta.env.VITE_PAYMENTS_API_URL,
   import.meta.env.VITE_PAYMENTS_API_FALLBACK_URL,
