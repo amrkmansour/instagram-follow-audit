@@ -40,6 +40,22 @@ export const csvCell = (value) => {
 
 export const filterExcluded = (users, excluded) => users.filter((username) => !excluded.has(username));
 
+export function partitionAccounts(users, marked) {
+  return {
+    regular: users.filter((username) => !marked.has(username)),
+    celebrity: users.filter((username) => marked.has(username)),
+  };
+}
+
+export function createResultsCsv(users, marked) {
+  const { regular, celebrity } = partitionAccounts(users, marked);
+  const row = (username, category) => [username, `https://instagram.com/${encodeURIComponent(username)}/`, category].map(csvCell).join(',');
+  return ['username,profile,category',
+    ...regular.map((username) => row(username, 'Not following back')),
+    ...celebrity.map((username) => row(username, 'Celebrity or verified (manually marked)')),
+  ].join('\r\n') + '\r\n';
+}
+
 const app = typeof document !== 'undefined' ? document.querySelector('#app') : null;
 
 if (app) {
@@ -273,32 +289,63 @@ async function processFiles(fileList, elements) {
     status.innerHTML = '<div class="working"><i></i> Verifying payment…</div>';
     if (!hasPasswordAccess()) await redeemAudit(getPendingCheckout());
     const excluded = new Set();
+    const markedCelebrity = new Set();
     results.innerHTML = `<div class="summary"><div><small>Following</small><strong>${following.size.toLocaleString()}</strong></div><div><small>Followers in file</small><strong>${followers.size.toLocaleString()}</strong></div><div><small>Not following back</small><strong>${nonFollowers.length.toLocaleString()}</strong></div></div>
       <div class="notice"><strong>Before relying on this list:</strong> confirm that you requested an <b>All time</b> export. Instagram does not include a reliable setting in the ZIP that lets this tool verify the selected date range.</div>
-      <div class="result-head"><div><h2 id="results-title">Not following you back</h2><p>Based on the lists in this export. Follower counts are not checked.</p></div><div class="result-actions"><button id="start-over" class="secondary-button" type="button">Start over</button><button id="download" type="button">Download CSV</button></div></div>
+      <div class="result-head"><div><h2 id="results-title">Not following you back</h2><p>Mark celebrity or verified accounts to move them into their own section. Verification is not checked automatically.</p></div><div class="result-actions"><button id="start-over" class="secondary-button" type="button">Start over</button><button id="download" type="button">Download CSV</button></div></div>
       <div class="filter-bar"><label>Search accounts <input id="account-search" type="search" placeholder="Type a username…" autocomplete="off" /></label><span id="visible-count"></span><button id="restore-exclusions" class="text-button" type="button">Restore excluded accounts</button></div>
-      <div class="accounts" id="accounts"></div>`;
+      <div class="accounts" id="accounts"></div>
+      <section class="celebrity-results" id="celebrity-results" aria-labelledby="celebrity-title" hidden>
+        <div class="celebrity-head"><div><h3 id="celebrity-title">Celebrity or verified accounts</h3><p>Accounts you manually marked during this audit.</p></div><strong id="celebrity-count"></strong></div>
+        <div class="accounts" id="celebrity-accounts"></div>
+      </section>`;
 
     const accounts = results.querySelector('#accounts');
+    const celebrityAccounts = results.querySelector('#celebrity-accounts');
+    const celebritySection = results.querySelector('#celebrity-results');
+    const celebrityCount = results.querySelector('#celebrity-count');
     const visibleCount = results.querySelector('#visible-count');
     const restoreButton = results.querySelector('#restore-exclusions');
     const searchInput = results.querySelector('#account-search');
+    const accountRow = (username, index, isCelebrity) => `<div class="account-row"><span>${index + 1}</span><a href="https://instagram.com/${encodeURIComponent(username)}/" target="_blank" rel="noreferrer"><b>@${escapeHtml(username)}</b><em>View <span aria-hidden="true">↗</span><span class="sr-only"> in a new tab</span></em></a><div class="account-actions">${isCelebrity
+      ? `<button type="button" data-unmark-celebrity="${escapeHtml(username)}" aria-label="Move @${escapeHtml(username)} back to the main results">Move back</button>`
+      : `<button type="button" data-mark-celebrity="${escapeHtml(username)}" aria-label="Mark @${escapeHtml(username)} as celebrity or verified">Mark celebrity</button>`}<button type="button" data-exclude="${escapeHtml(username)}" aria-label="Exclude @${escapeHtml(username)} from these results">Exclude</button></div></div>`;
     const renderAccounts = () => {
       const filtered = filterExcluded(nonFollowers, excluded);
+      const { regular, celebrity } = partitionAccounts(filtered, markedCelebrity);
       const query = searchInput.value.trim().toLowerCase();
-      const visible = query ? filtered.filter((username) => username.includes(query)) : filtered;
+      const visible = query ? regular.filter((username) => username.includes(query)) : regular;
+      const visibleCelebrity = query ? celebrity.filter((username) => username.includes(query)) : celebrity;
       const hiddenCount = nonFollowers.length - filtered.length;
-      visibleCount.textContent = `${visible.length.toLocaleString()} shown${hiddenCount ? ` · ${hiddenCount.toLocaleString()} excluded` : ''}`;
+      visibleCount.textContent = `${visible.length.toLocaleString()} in main list${celebrity.length ? ` · ${celebrity.length.toLocaleString()} marked` : ''}${hiddenCount ? ` · ${hiddenCount.toLocaleString()} excluded` : ''}`;
       restoreButton.hidden = hiddenCount === 0;
       accounts.innerHTML = visible.length
-        ? visible.map((username, index) => `<div class="account-row"><span>${index + 1}</span><a href="https://instagram.com/${encodeURIComponent(username)}/" target="_blank" rel="noreferrer"><b>@${escapeHtml(username)}</b><em>View <span aria-hidden="true">↗</span><span class="sr-only"> in a new tab</span></em></a><button type="button" data-exclude="${escapeHtml(username)}" aria-label="Exclude @${escapeHtml(username)} from these results">Exclude</button></div>`).join('')
-        : `<p class="empty">${nonFollowers.length ? 'All matching accounts are excluded.' : 'Everyone in this export follows you back.'}</p>`;
+        ? visible.map((username, index) => accountRow(username, index, false)).join('')
+        : `<p class="empty">${regular.length ? 'No accounts match your search.' : (nonFollowers.length ? 'No accounts remain in the main list.' : 'Everyone in this export follows you back.')}</p>`;
+      celebritySection.hidden = celebrity.length === 0;
+      celebrityCount.textContent = celebrity.length.toLocaleString();
+      celebrityAccounts.innerHTML = visibleCelebrity.length
+        ? visibleCelebrity.map((username, index) => accountRow(username, index, true)).join('')
+        : '<p class="empty">No marked accounts match your search.</p>';
     };
-    accounts.addEventListener('click', (event) => {
+    results.addEventListener('click', (event) => {
+      const markButton = event.target.closest('[data-mark-celebrity]');
+      const unmarkButton = event.target.closest('[data-unmark-celebrity]');
       const button = event.target.closest('[data-exclude]');
-      if (!button) return;
-      const username = normalizeUsername(button.dataset.exclude);
+      const username = normalizeUsername(markButton?.dataset.markCelebrity || unmarkButton?.dataset.unmarkCelebrity || button?.dataset.exclude);
       if (!username) return;
+      if (markButton) {
+        markedCelebrity.add(username);
+        renderAccounts();
+        status.textContent = `Moved @${username} to Celebrity or verified accounts.`;
+        return;
+      }
+      if (unmarkButton) {
+        markedCelebrity.delete(username);
+        renderAccounts();
+        status.textContent = `Moved @${username} back to the main results.`;
+        return;
+      }
       excluded.add(username);
       renderAccounts();
       status.textContent = `Excluded @${username} from these results.`;
@@ -315,7 +362,7 @@ async function processFiles(fileList, elements) {
       input.value = '';
       zone?.focus();
     });
-    results.querySelector('#download')?.addEventListener('click', () => downloadCsv(filterExcluded(nonFollowers, excluded)));
+    results.querySelector('#download')?.addEventListener('click', () => downloadCsv(filterExcluded(nonFollowers, excluded), markedCelebrity));
     renderAccounts();
     status.textContent = `Finished. Found ${nonFollowers.length.toLocaleString()} accounts that do not follow you back.`;
     results.focus({ preventScroll: true });
@@ -332,9 +379,8 @@ function escapeHtml(value) {
   return String(value).replace(/[&<>'"]/g, (character) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' })[character]);
 }
 
-function downloadCsv(users) {
-  const rows = ['username,profile', ...users.map((username) => `${csvCell(username)},${csvCell(`https://instagram.com/${encodeURIComponent(username)}/`)}`)];
-  const blob = new Blob([`${rows.join('\r\n')}\r\n`], { type: 'text/csv;charset=utf-8' });
+function downloadCsv(users, markedCelebrity) {
+  const blob = new Blob([createResultsCsv(users, markedCelebrity)], { type: 'text/csv;charset=utf-8' });
   const url = URL.createObjectURL(blob);
   const link = document.createElement('a');
   link.href = url;

@@ -1,6 +1,6 @@
 import JSZip from 'jszip';
 import { describe, expect, it } from 'vitest';
-import { compareLists, csvCell, filterExcluded, normalizeUsername, parseInstagramJsonFiles, parseInstagramZip } from './main.js';
+import { compareLists, createResultsCsv, csvCell, filterExcluded, normalizeUsername, parseInstagramJsonFiles, parseInstagramZip, partitionAccounts } from './main.js';
 
 const follower = (value) => ({ string_list_data: [{ value }] });
 const following = (title) => ({ title });
@@ -48,6 +48,21 @@ describe('csvCell', () => {
 describe('filterExcluded', () => {
   it('removes browser-local exclusions from displayed and downloaded results', () => {
     expect(filterExcluded(['celebrity', 'friend', 'brand'], new Set(['celebrity', 'brand']))).toEqual(['friend']);
+  });
+});
+
+describe('manual celebrity categorization', () => {
+  it('moves marked accounts into a separate group', () => {
+    expect(partitionAccounts(['friend', 'celebrity', 'brand'], new Set(['celebrity']))).toEqual({
+      regular: ['friend', 'brand'],
+      celebrity: ['celebrity'],
+    });
+  });
+
+  it('labels manually marked accounts separately in the CSV', () => {
+    const csv = createResultsCsv(['friend', 'celebrity'], new Set(['celebrity']));
+    expect(csv).toContain('"friend","https://instagram.com/friend/","Not following back"');
+    expect(csv).toContain('"celebrity","https://instagram.com/celebrity/","Celebrity or verified (manually marked)"');
   });
 });
 
