@@ -155,6 +155,8 @@ main { max-width: 1100px; margin: auto; padding: 58px 28px; }
 .account-row:hover { background: #f2eee5; }
 .account-row > span { padding-left: 10px; color: #686e69; }
 .account-row > a { display: flex; justify-content: space-between; padding: 16px 14px 16px 0; color: #1e2c25; text-decoration: none; }
+.account-row > a { min-width: 0; gap: 10px; }
+.account-row > a b { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .account-row em { color: #8f2d1d; font-style: normal; font-weight: 600; }
 .account-actions { display: flex; align-self: stretch; }
 .account-actions button { padding: 0 12px; border: 0; border-left: 1px solid #ddd9d0; background: transparent; color: #6a4b43; cursor: pointer; }
@@ -193,12 +195,13 @@ footer p { color: #6f756f; font-size: 11px; }
   .password-form > div input { flex: 1; }
   .account-row { grid-template-columns: 34px 1fr auto; }
   .account-actions { flex-direction: column; }
-  .account-actions button { min-height: 38px; border-bottom: 1px solid #ddd9d0; }
+  .account-actions button { min-height: 44px; border-bottom: 1px solid #ddd9d0; }
   .dropzone { min-height: 270px; }
   .guide-image, .setting-arrows, .final-settings-label { margin-left: 0; }
 }
 
 @media (max-width: 480px) {
+  .hero h1 { line-height: 1.08; white-space: normal; }
   .steps { grid-template-columns: 1fr; }
   .quick-settings { margin-left: 0; }
   .section-heading { gap: 12px; }

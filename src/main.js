@@ -11,6 +11,8 @@ export const LIMITS = Object.freeze({
 });
 
 const LEGACY_EXCLUSION_KEY = 'followcheck-excluded-usernames';
+let activeAuditController = null;
+let auditGeneration = 0;
 
 export const normalizeUsername = (value) => {
   const username = typeof value === 'string' ? value.trim().toLowerCase() : '';
@@ -86,7 +88,7 @@ if (app) {
       <section class="payment-section" aria-labelledby="payment-title">
         <div class="section-heading"><span aria-hidden="true">02</span><div><h2 id="payment-title">Unlock one audit</h2><p>One secure payment. No account or subscription.</p></div></div>
         <div class="payment-card"><div><strong>$2.99 <small>USD</small></strong><p>Includes one browser-based audit and CSV download. Payment is handled by Stripe.</p></div><button id="checkout" type="button">Pay securely with Stripe <span aria-hidden="true">→</span></button></div>
-        <form id="password-form" class="password-form"><label for="access-password">Have an access password?</label><div><input id="access-password" name="password" type="password" autocomplete="current-password" required /><button type="submit">Unlock audit</button></div></form>
+        <form id="password-form" class="password-form"><label for="access-password">Have an access password?</label><div><input id="access-password" name="password" type="password" autocomplete="off" required /><button type="submit">Unlock audit</button></div></form>
         <div id="payment-status" class="status" role="status" aria-live="polite" aria-atomic="true"></div>
       </section>
       <section class="upload-section" id="upload-section" aria-labelledby="upload-title" hidden>
@@ -94,7 +96,7 @@ if (app) {
           <div class="section-heading"><span aria-hidden="true">03</span><div><h2 id="export-guide-title">Request the right Instagram data</h2><p>Follow these settings so your audit has everything it needs.</p></div></div>
           <ol class="export-steps">
             <li>
-              <div class="export-step-copy"><span class="step-number">1</span><div><h3>Open Accounts Center</h3><p>Open Instagram’s Accounts Center to begin your request.</p><a class="primary-link" href="https://accountscenter.instagram.com/info_and_permissions/" target="_blank" rel="noreferrer">Open Accounts Center <span aria-hidden="true">↗</span><span class="sr-only"> (opens in a new tab)</span></a></div></div>
+              <div class="export-step-copy"><span class="step-number">1</span><div><h3>Open Accounts Center</h3><p>Open Instagram’s Accounts Center in your browser to begin your request.</p><a class="primary-link" href="https://accountscenter.instagram.com/info_and_permissions/" target="_blank" rel="noreferrer">Open Accounts Center <span aria-hidden="true">↗</span><span class="sr-only"> (opens in a new tab)</span></a></div></div>
             </li>
             <li>
               <div class="export-step-copy"><span class="step-number">2</span><div><h3>Choose Export your information</h3><p>Go to <strong>Your information and permissions</strong> → <strong>Export your information</strong>.</p></div></div>
@@ -276,6 +278,9 @@ export async function parseInstagramJsonFiles(fileList) {
 
 async function processFiles(fileList, elements) {
   const { status, results, input, zone } = elements;
+  const generation = ++auditGeneration;
+  activeAuditController?.abort();
+  activeAuditController = null;
   const files = [...fileList];
   results.replaceChildren();
   if (!files.length) return;
@@ -286,8 +291,13 @@ async function processFiles(fileList, elements) {
     const { followers, following, nonFollowers } = containsZip
       ? await parseInstagramZip(files[0])
       : await parseInstagramJsonFiles(files);
+    if (generation !== auditGeneration) return;
     status.innerHTML = '<div class="working"><i></i> Verifying payment…</div>';
     if (!hasPasswordAccess()) await redeemAudit(getPendingCheckout());
+    if (generation !== auditGeneration) return;
+    const auditController = new AbortController();
+    activeAuditController = auditController;
+    const listenerOptions = { signal: auditController.signal };
     const excluded = new Set();
     const markedCelebrity = new Set();
     results.innerHTML = `<div class="summary"><div><small>Following</small><strong>${following.size.toLocaleString()}</strong></div><div><small>Followers in file</small><strong>${followers.size.toLocaleString()}</strong></div><div><small>Not following back</small><strong>${nonFollowers.length.toLocaleString()}</strong></div></div>
@@ -296,7 +306,7 @@ async function processFiles(fileList, elements) {
       <div class="filter-bar"><label>Search accounts <input id="account-search" type="search" placeholder="Type a username…" autocomplete="off" /></label><span id="visible-count"></span><button id="restore-exclusions" class="text-button" type="button">Restore excluded accounts</button></div>
       <div class="accounts" id="accounts"></div>
       <section class="celebrity-results" id="celebrity-results" aria-labelledby="celebrity-title" hidden>
-        <div class="celebrity-head"><div><h3 id="celebrity-title">Celebrity or verified accounts</h3><p>Accounts you manually marked during this audit.</p></div><strong id="celebrity-count"></strong></div>
+        <div class="celebrity-head"><div><h3 id="celebrity-title">Manually marked celebrity or verified accounts</h3><p>FollowCheck has not verified these labels.</p></div><strong id="celebrity-count"></strong></div>
         <div class="accounts" id="celebrity-accounts"></div>
       </section>`;
 
@@ -317,7 +327,7 @@ async function processFiles(fileList, elements) {
       const visible = query ? regular.filter((username) => username.includes(query)) : regular;
       const visibleCelebrity = query ? celebrity.filter((username) => username.includes(query)) : celebrity;
       const hiddenCount = nonFollowers.length - filtered.length;
-      visibleCount.textContent = `${visible.length.toLocaleString()} in main list${celebrity.length ? ` · ${celebrity.length.toLocaleString()} marked` : ''}${hiddenCount ? ` · ${hiddenCount.toLocaleString()} excluded` : ''}`;
+      visibleCount.textContent = `${visible.length.toLocaleString()} in main list${visibleCelebrity.length ? ` · ${visibleCelebrity.length.toLocaleString()} marked shown` : ''}${hiddenCount ? ` · ${hiddenCount.toLocaleString()} excluded` : ''}`;
       restoreButton.hidden = hiddenCount === 0;
       accounts.innerHTML = visible.length
         ? visible.map((username, index) => accountRow(username, index, false)).join('')
@@ -327,6 +337,9 @@ async function processFiles(fileList, elements) {
       celebrityAccounts.innerHTML = visibleCelebrity.length
         ? visibleCelebrity.map((username, index) => accountRow(username, index, true)).join('')
         : '<p class="empty">No marked accounts match your search.</p>';
+    };
+    const focusAction = (container, dataKey, username) => {
+      [...container.querySelectorAll(`[data-${dataKey}]`)].find((candidate) => candidate.dataset[dataKey.replace(/-([a-z])/g, (_, letter) => letter.toUpperCase())] === username)?.focus();
     };
     results.addEventListener('click', (event) => {
       const markButton = event.target.closest('[data-mark-celebrity]');
@@ -338,35 +351,45 @@ async function processFiles(fileList, elements) {
         markedCelebrity.add(username);
         renderAccounts();
         status.textContent = `Moved @${username} to Celebrity or verified accounts.`;
+        focusAction(celebrityAccounts, 'unmark-celebrity', username);
         return;
       }
       if (unmarkButton) {
         markedCelebrity.delete(username);
         renderAccounts();
         status.textContent = `Moved @${username} back to the main results.`;
+        focusAction(accounts, 'mark-celebrity', username);
         return;
       }
       excluded.add(username);
       renderAccounts();
       status.textContent = `Excluded @${username} from these results.`;
-    });
+      searchInput.focus();
+    }, listenerOptions);
     restoreButton.addEventListener('click', () => {
       excluded.clear();
       renderAccounts();
       status.textContent = 'Restored all excluded accounts.';
-    });
-    searchInput.addEventListener('input', renderAccounts);
+    }, listenerOptions);
+    searchInput.addEventListener('input', renderAccounts, listenerOptions);
     results.querySelector('#start-over').addEventListener('click', () => {
+      ++auditGeneration;
+      auditController.abort();
+      if (activeAuditController === auditController) activeAuditController = null;
       results.replaceChildren();
       status.textContent = 'Ready for another export.';
       input.value = '';
       zone?.focus();
-    });
-    results.querySelector('#download')?.addEventListener('click', () => downloadCsv(filterExcluded(nonFollowers, excluded), markedCelebrity));
+    }, listenerOptions);
+    results.querySelector('#download')?.addEventListener('click', () => downloadCsv(filterExcluded(nonFollowers, excluded), markedCelebrity), listenerOptions);
     renderAccounts();
     status.textContent = `Finished. Found ${nonFollowers.length.toLocaleString()} accounts that do not follow you back.`;
     results.focus({ preventScroll: true });
   } catch (error) {
+    if (generation === auditGeneration) {
+      activeAuditController?.abort();
+      activeAuditController = null;
+    }
     showError(status, error instanceof Error ? error.message : 'We could not complete this audit.');
   }
 }
