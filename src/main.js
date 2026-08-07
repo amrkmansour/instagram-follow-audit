@@ -78,7 +78,37 @@ if (app) {
         <div id="payment-status" class="status" role="status" aria-live="polite" aria-atomic="true"></div>
       </section>
       <section class="upload-section" id="upload-section" aria-labelledby="upload-title" hidden>
-        <div class="section-heading"><span aria-hidden="true">03</span><div><h2 id="upload-title">Drop your export</h2><p>We’ll compare the two lists right here in your browser.</p></div></div>
+        <div class="export-guide" aria-labelledby="export-guide-title">
+          <div class="section-heading"><span aria-hidden="true">03</span><div><h2 id="export-guide-title">Request the right Instagram data</h2><p>Follow these settings so your audit has everything it needs.</p></div></div>
+          <ol class="export-steps">
+            <li>
+              <div class="export-step-copy"><span class="step-number">1</span><div><h3>Open Accounts Center</h3><p>Open Instagram’s Accounts Center to begin your request.</p><a class="primary-link" href="https://accountscenter.instagram.com/info_and_permissions/" target="_blank" rel="noreferrer">Open Accounts Center <span aria-hidden="true">↗</span><span class="sr-only"> (opens in a new tab)</span></a></div></div>
+            </li>
+            <li>
+              <div class="export-step-copy"><span class="step-number">2</span><div><h3>Choose Export your information</h3><p>Go to <strong>Your information and permissions</strong> → <strong>Export your information</strong>.</p></div></div>
+              <figure class="guide-image guide-image-wide"><img src="/instructions/accounts-center-export.png" alt="Accounts Center with Your information and permissions selected and Export your information highlighted" loading="lazy" decoding="async" /><figcaption>Select “Export your information.”</figcaption></figure>
+            </li>
+            <li>
+              <div class="export-step-copy"><span class="step-number">3</span><div><h3>Set up your export</h3><p>Choose <strong>Create export</strong> → <strong>Export to device</strong>, then confirm each setting below.</p></div></div>
+              <div class="setting-arrows" aria-label="Required export settings">
+                <div><span aria-hidden="true">→</span><p><strong>Customize information</strong> — Select <strong>Clear all</strong> for every section except <strong>Connections</strong>. Under Connections, leave only <strong>Followers and following</strong> checked.</p></div>
+                <div><span aria-hidden="true">→</span><p><strong>Date range</strong> — Choose <strong>All time</strong>.</p></div>
+                <div><span aria-hidden="true">→</span><p><strong>Format</strong> — Choose <strong>JSON</strong>.</p></div>
+                <div><span aria-hidden="true">→</span><p><strong>Media quality</strong> — Keep <strong>Medium quality</strong>.</p></div>
+              </div>
+              <figure class="guide-image"><img src="/instructions/followers-and-following.png" alt="Connections settings with only Followers and following checked" loading="lazy" decoding="async" /><figcaption>Under Connections, leave only “Followers and following” checked.</figcaption></figure>
+              <div class="final-settings-label">Your settings should look like this:</div>
+              <figure class="guide-image"><img src="/instructions/final-export-settings.png" alt="Final Instagram export settings showing Followers and following, All time, JSON, and Medium quality" loading="lazy" decoding="async" /><figcaption>Followers and following · All time · JSON · Medium quality</figcaption></figure>
+            </li>
+            <li>
+              <div class="export-step-copy"><span class="step-number">4</span><div><h3>Start the export</h3><p>Review your settings, then select <strong>Start export</strong>. Instagram will notify you when the file is ready.</p></div></div>
+            </li>
+            <li>
+              <div class="export-step-copy"><span class="step-number">5</span><div><h3>Download and upload your file</h3><p>Download the ZIP file Instagram provides, then drop it into the tool below. We’ll process it in your browser and show your results.</p></div></div>
+            </li>
+          </ol>
+        </div>
+        <div class="section-heading upload-heading"><span aria-hidden="true">04</span><div><h2 id="upload-title">Upload your Instagram file</h2><p>We’ll compare the two lists right here in your browser.</p></div></div>
         <label class="dropzone" id="dropzone" tabindex="0" role="button" aria-describedby="upload-help">
           <input type="file" id="file" accept=".zip,.json,application/zip,application/json" multiple />
           <span class="upload-icon" aria-hidden="true">↑</span><strong>Drop your Instagram file here</strong><span>or <u>choose files</u> from your device</span><small id="upload-help">ZIP recommended · JSON files also accepted · Maximum 50 MB</small>

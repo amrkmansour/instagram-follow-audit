@@ -89,6 +89,25 @@ main { max-width: 1100px; margin: auto; padding: 58px 28px; }
 .password-form button { padding: 11px 15px; border: 0; background: #29483a; color: white; cursor: pointer; }
 .password-form button:disabled { background: #718078; cursor: default; }
 
+.export-guide { margin-bottom: 78px; }
+.export-steps { display: grid; gap: 16px; margin: 0; padding: 0; list-style: none; }
+.export-steps > li { padding: 28px; border: 1px solid #d6d3ca; background: #faf8f2; }
+.export-step-copy { display: grid; grid-template-columns: 34px 1fr; gap: 16px; }
+.step-number { display: grid; width: 30px; height: 30px; place-items: center; border-radius: 50%; background: #1e2c25; color: white; font-size: 12px; font-weight: 700; }
+.export-step-copy h3 { margin: 3px 0 8px; font-size: 18px; }
+.export-step-copy p { margin: 0; color: #59635d; font-size: 14px; line-height: 1.65; }
+.export-step-copy .primary-link { margin-top: 16px; }
+.setting-arrows { display: grid; gap: 10px; margin: 24px 0 24px 50px; }
+.setting-arrows > div { display: grid; grid-template-columns: 28px 1fr; gap: 8px; padding: 15px 18px; border-left: 3px solid #9d321f; background: #f0ede5; }
+.setting-arrows span { color: #9d321f; font-weight: 800; }
+.setting-arrows p { margin: 0; color: #3f4b44; font-size: 13px; line-height: 1.6; }
+.guide-image { max-width: 720px; margin: 24px 0 0 50px; }
+.guide-image-wide { max-width: 900px; }
+.guide-image img { display: block; width: 100%; height: auto; border: 1px solid #d5d3cc; background: white; }
+.guide-image figcaption { margin-top: 8px; color: #626a64; font-size: 12px; }
+.final-settings-label { margin: 28px 0 -10px 50px; color: #26362d; font-size: 13px; font-weight: 700; }
+.upload-heading { margin-top: 0; }
+
 .dropzone {
   display: flex;
   min-height: 300px;
@@ -164,6 +183,7 @@ footer p { color: #6f756f; font-size: 11px; }
   .password-form > div input { flex: 1; }
   .account-row { grid-template-columns: 34px 1fr auto; }
   .dropzone { min-height: 270px; }
+  .guide-image, .setting-arrows, .final-settings-label { margin-left: 0; }
 }
 
 @media (max-width: 480px) {
@@ -173,5 +193,8 @@ footer p { color: #6f756f; font-size: 11px; }
   .results-box:not(:empty) { padding: 18px; }
   .dropzone > strong { font-size: 22px; }
   .result-head { flex-direction: column; }
+  .export-steps > li { padding: 20px 16px; }
+  .export-step-copy { grid-template-columns: 30px 1fr; gap: 10px; }
+  .setting-arrows > div { padding: 13px 12px; }
   footer { align-items: flex-start; height: auto; gap: 20px; padding-top: 28px; padding-bottom: 28px; flex-direction: column; }
 }
