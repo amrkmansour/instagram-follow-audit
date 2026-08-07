@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { getPendingCheckout, hasPasswordAccess } from './payments.js';
+import { fetchPaymentApi, getPendingCheckout, hasPasswordAccess } from './payments.js';
 
 function storageWith(value) {
   return { getItem: () => value };
@@ -24,5 +24,26 @@ describe('hasPasswordAccess', () => {
     expect(hasPasswordAccess(storageWith('granted'))).toBe(true);
     expect(hasPasswordAccess(storageWith('true'))).toBe(false);
     expect(hasPasswordAccess(storageWith(null))).toBe(false);
+  });
+});
+
+describe('fetchPaymentApi', () => {
+  it('retries the fallback origin after a primary network failure', async () => {
+    const calls = [];
+    const response = { ok: true };
+    const fetchImpl = async (url) => {
+      calls.push(url);
+      if (calls.length === 1) throw new TypeError('Load failed');
+      return response;
+    };
+
+    await expect(fetchPaymentApi('/api/checkout-session', { method: 'POST' }, fetchImpl, [
+      'https://api.follow-check.com',
+      'https://fallback.example',
+    ])).resolves.toBe(response);
+    expect(calls).toEqual([
+      'https://api.follow-check.com/api/checkout-session',
+      'https://fallback.example/api/checkout-session',
+    ]);
   });
 });

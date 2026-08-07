@@ -1,11 +1,23 @@
 const CHECKOUT_KEY = 'followcheck-checkout';
 const PASSWORD_ACCESS_KEY = 'followcheck-password-access';
 
-const apiUrl = (path) => {
-  const origin = String(import.meta.env.VITE_PAYMENTS_API_URL || '').replace(/\/$/, '');
-  if (!origin) throw new Error('Payments are not configured yet.');
-  return `${origin}${path}`;
-};
+const configuredApiOrigins = () => [...new Set([
+  import.meta.env.VITE_PAYMENTS_API_URL,
+  import.meta.env.VITE_PAYMENTS_API_FALLBACK_URL,
+].map((value) => String(value || '').replace(/\/$/, '')).filter(Boolean))];
+
+export async function fetchPaymentApi(path, options, fetchImpl = fetch, origins = configuredApiOrigins()) {
+  if (!origins.length) throw new Error('Payments are not configured yet.');
+  let networkError;
+  for (const origin of origins) {
+    try {
+      return await fetchImpl(`${origin}${path}`, options);
+    } catch (error) {
+      networkError = error;
+    }
+  }
+  throw networkError || new Error('Payment service unavailable.');
+}
 
 export function captureCheckoutReturn(locationLike = window.location, storage = sessionStorage) {
   const params = new URLSearchParams(locationLike.search);
@@ -37,11 +49,11 @@ export function hasPasswordAccess(storage = sessionStorage) {
 }
 
 export async function unlockWithPassword(password, fetchImpl = fetch, storage = sessionStorage) {
-  const response = await fetchImpl(apiUrl('/api/password-access'), {
+  const response = await fetchPaymentApi('/api/password-access', {
     method: 'POST',
     headers: { 'content-type': 'application/json' },
     body: JSON.stringify({ password }),
-  });
+  }, fetchImpl);
   const body = await response.json().catch(() => ({}));
   if (!response.ok || body.unlocked !== true) throw new Error(body.error || 'Incorrect access password.');
   storage.setItem(PASSWORD_ACCESS_KEY, 'granted');
@@ -50,10 +62,10 @@ export async function unlockWithPassword(password, fetchImpl = fetch, storage = 
 export async function startCheckout(fetchImpl = fetch) {
   let response;
   try {
-    response = await fetchImpl(apiUrl('/api/checkout-session'), {
+    response = await fetchPaymentApi('/api/checkout-session', {
       method: 'POST',
       headers: { 'content-type': 'application/json' },
-    });
+    }, fetchImpl);
   } catch {
     throw new Error('Could not connect to secure checkout. Check your connection or content-blocking settings and try again.');
   }
@@ -64,11 +76,11 @@ export async function startCheckout(fetchImpl = fetch) {
 
 export async function redeemAudit(checkout, fetchImpl = fetch, storage = sessionStorage) {
   if (!checkout) throw new Error('Pay $2.99 to run this audit.');
-  const response = await fetchImpl(apiUrl('/api/redeem'), {
+  const response = await fetchPaymentApi('/api/redeem', {
     method: 'POST',
     headers: { 'content-type': 'application/json' },
     body: JSON.stringify(checkout),
-  });
+  }, fetchImpl);
   const body = await response.json().catch(() => ({}));
   if (!response.ok || body.redeemed !== true) throw new Error(body.error || 'Payment could not be verified.');
   storage.removeItem(CHECKOUT_KEY);
