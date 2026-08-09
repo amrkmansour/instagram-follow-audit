@@ -2,6 +2,7 @@
   "name": "Follow Check",
   "image": "mcr.microsoft.com/devcontainers/javascript-node:1-22-bookworm",
   "postCreateCommand": "npm ci",
+  "postStartCommand": "git pull --ff-only origin main",
   "forwardPorts": [5173],
   "portsAttributes": {
     "5173": {
