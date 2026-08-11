@@ -87,7 +87,7 @@ if (app) {
       </section>
       <section class="payment-section" aria-labelledby="payment-title">
         <div class="section-heading"><span aria-hidden="true">02</span><div><h2 id="payment-title">Unlock one audit</h2><p>One secure payment. No account or subscription.</p></div></div>
-        <div class="payment-card"><div><strong>$2.99 <small>USD</small></strong><p>Includes one browser-based audit and CSV download. Payment is handled by Stripe.</p></div><a id="checkout" class="checkout-button" href="${escapeHtml(checkoutRedirectUrl())}">Pay securely with Stripe <span aria-hidden="true">→</span></a></div>
+        <div class="payment-card"><div><strong>$2.99 <small>USD</small></strong><p>Includes one browser-based audit and CSV download. Payment is handled by Stripe.</p></div><a id="checkout" class="checkout-button" data-track="checkout_started" href="${escapeHtml(checkoutUrlWithCampaign())}">Pay securely with Stripe <span aria-hidden="true">→</span></a></div>
         <form id="password-form" class="password-form"><label for="access-password">Have an access password?</label><div><input id="access-password" name="password" type="password" autocomplete="off" required /><button type="submit">Unlock audit</button></div></form>
         <div id="payment-status" class="status" role="status" aria-live="polite" aria-atomic="true"></div>
       </section>
@@ -152,6 +152,7 @@ if (app) {
   const returnedCheckout = captureCheckoutReturn();
   const pendingCheckout = returnedCheckout || getPendingCheckout();
   if (pendingCheckout) {
+    if (returnedCheckout) window.followCheckTrack?.('checkout_completed');
     revealUpload('Payment received. Choose a valid Instagram export to use this audit.');
     checkoutButton.textContent = 'Payment ready';
     checkoutButton.setAttribute('aria-disabled', 'true');
@@ -170,6 +171,7 @@ if (app) {
     paymentStatus.innerHTML = '<div class="working"><i></i> Checking access password…</div>';
     try {
       await unlockWithPassword(passwordInput.value);
+      window.followCheckTrack?.('password_access_granted');
       passwordInput.value = '';
       passwordForm.hidden = true;
       revealUpload('Access password accepted. The audit is unlocked in this tab.');
@@ -375,6 +377,7 @@ async function processFiles(fileList, elements) {
     results.querySelector('#download')?.addEventListener('click', () => downloadCsv(filterExcluded(nonFollowers, excluded), markedCelebrity), listenerOptions);
     renderAccounts();
     status.textContent = `Finished. Found ${nonFollowers.length.toLocaleString()} accounts that do not follow you back.`;
+    window.followCheckTrack?.('audit_completed');
     results.focus({ preventScroll: true });
   } catch (error) {
     if (generation === auditGeneration) {
@@ -394,6 +397,7 @@ function escapeHtml(value) {
 }
 
 function downloadCsv(users, markedCelebrity) {
+  window.followCheckTrack?.('csv_downloaded');
   const blob = new Blob([createResultsCsv(users, markedCelebrity)], { type: 'text/csv;charset=utf-8' });
   const url = URL.createObjectURL(blob);
   const link = document.createElement('a');
@@ -403,4 +407,13 @@ function downloadCsv(users, markedCelebrity) {
   link.click();
   link.remove();
   setTimeout(() => URL.revokeObjectURL(url), 0);
+}
+
+function checkoutUrlWithCampaign() {
+  const url = new URL(checkoutRedirectUrl());
+  const campaign = window.followCheckCampaign || {};
+  for (const key of ['utm_source', 'utm_medium', 'utm_campaign', 'utm_content']) {
+    if (campaign[key]) url.searchParams.set(key, campaign[key]);
+  }
+  return url.toString();
 }

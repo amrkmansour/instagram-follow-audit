@@ -6,6 +6,9 @@ const pages = [
   ['/guides/', 'guides/index.html'],
   ['/guides/how-to-see-who-doesnt-follow-you-back-on-instagram/', 'guides/how-to-see-who-doesnt-follow-you-back-on-instagram/index.html'],
   ['/guides/download-instagram-followers-following-data/', 'guides/download-instagram-followers-following-data/index.html'],
+  ['/guides/instagram-unfollowers-vs-not-following-back/', 'guides/instagram-unfollowers-vs-not-following-back/index.html'],
+  ['/guides/are-instagram-unfollower-apps-safe/', 'guides/are-instagram-unfollower-apps-safe/index.html'],
+  ['/guides/instagram-export-troubleshooting/', 'guides/instagram-export-troubleshooting/index.html'],
   ['/privacy/', 'privacy/index.html'],
   ['/about/', 'about/index.html'],
 ];

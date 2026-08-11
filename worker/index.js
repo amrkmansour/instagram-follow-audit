@@ -52,6 +52,43 @@ function stripeClient(env) {
   });
 }
 
+const CAMPAIGN_KEYS = ['utm_source', 'utm_medium', 'utm_campaign', 'utm_content'];
+const EVENT_NAMES = new Set(['page_view', 'guide_cta_clicked', 'checkout_started', 'checkout_completed', 'password_access_granted', 'audit_completed', 'csv_downloaded']);
+
+function cleanDimension(value, max = 80) {
+  return String(value || '').trim().toLowerCase().replace(/[^a-z0-9._\/-]/g, '-').replace(/-+/g, '-').slice(0, max);
+}
+
+function campaignFromSearch(searchParams) {
+  return Object.fromEntries(CAMPAIGN_KEYS.map((key) => [key, cleanDimension(searchParams.get(key))]).filter(([, value]) => value));
+}
+
+function writeEvent(event, page, campaign = {}, target = '') {
+  console.log(JSON.stringify({
+    message: 'marketing_event',
+    event,
+    page: cleanDimension(page, 120),
+    source: cleanDimension(campaign.utm_source),
+    medium: cleanDimension(campaign.utm_medium),
+    campaign: cleanDimension(campaign.utm_campaign),
+    content: cleanDimension(campaign.utm_content),
+    target: cleanDimension(target, 100),
+  }));
+}
+
+async function recordEvent(request, env, origin) {
+  if (!origin) return json({ error: 'Origin not allowed.' }, 403, corsFallbackOrigin(env));
+  const contentLength = Number(request.headers.get('content-length') || 0);
+  if (contentLength > 2_000) return json({ error: 'Invalid request.' }, 413, origin);
+  const body = await request.json();
+  const event = cleanDimension(body?.event, 40);
+  const page = cleanDimension(body?.page, 120);
+  if (!EVENT_NAMES.has(event) || !page.startsWith('/')) return json({ error: 'Invalid event.' }, 400, origin);
+  const campaign = Object.fromEntries(CAMPAIGN_KEYS.map((key) => [key, cleanDimension(body?.campaign?.[key])]).filter(([, value]) => value));
+  writeEvent(event, page, campaign, body?.target);
+  return new Response(null, { status: 204, headers: { 'access-control-allow-origin': origin, 'vary': 'Origin', 'cache-control': 'no-store' } });
+}
+
 export class EntitlementGate {
   constructor(state) {
     this.state = state;
@@ -113,7 +150,7 @@ async function passwordAccess(request, env, origin) {
   return json({ unlocked: true }, 200, origin);
 }
 
-async function createStripeCheckout(env) {
+async function createStripeCheckout(env, campaign = {}) {
   const claimSecret = randomSecret();
   const claimHash = await sha256(claimSecret);
   const stripe = stripeClient(env);
@@ -122,18 +159,20 @@ async function createStripeCheckout(env) {
     line_items: [{ price: env.STRIPE_PRICE_ID, quantity: 1 }],
     success_url: `${env.APP_URL}/?checkout=success&session_id={CHECKOUT_SESSION_ID}&claim=${encodeURIComponent(claimSecret)}`,
     cancel_url: `${env.APP_URL}/?checkout=cancelled#payment-title`,
-    metadata: { product: 'instagram_follow_audit', claim_hash: claimHash },
+    metadata: { product: 'instagram_follow_audit', claim_hash: claimHash, ...campaign },
   });
 }
 
 async function createCheckout(request, env, origin) {
   if (!origin) return json({ error: 'Origin not allowed.' }, 403, corsFallbackOrigin(env));
-  const session = await createStripeCheckout(env);
+  const body = await request.json().catch(() => ({}));
+  const campaign = Object.fromEntries(CAMPAIGN_KEYS.map((key) => [key, cleanDimension(body?.campaign?.[key])]).filter(([, value]) => value));
+  const session = await createStripeCheckout(env, campaign);
   return json({ url: session.url }, 200, origin);
 }
 
-async function redirectToCheckout(env) {
-  const session = await createStripeCheckout(env);
+async function redirectToCheckout(env, url) {
+  const session = await createStripeCheckout(env, campaignFromSearch(url.searchParams));
   return new Response(null, {
     status: 303,
     headers: {
@@ -202,7 +241,8 @@ export default {
     }
     if (request.method === 'OPTIONS') return json({ error: 'Origin not allowed.' }, 403, corsFallbackOrigin(env));
     try {
-      if (request.method === 'GET' && url.pathname === '/api/checkout') return await redirectToCheckout(env);
+      if (request.method === 'GET' && url.pathname === '/api/checkout') return await redirectToCheckout(env, url);
+      if (request.method === 'POST' && url.pathname === '/api/events') return await recordEvent(request, env, origin);
       if (request.method === 'POST' && url.pathname === '/api/checkout-session') return await createCheckout(request, env, origin);
       if (request.method === 'POST' && url.pathname === '/api/password-access') return await passwordAccess(request, env, origin);
       if (request.method === 'POST' && url.pathname === '/api/redeem') return await redeem(request, env, origin);
