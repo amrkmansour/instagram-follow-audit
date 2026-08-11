@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="See which Instagram accounts do not follow you back by comparing your official followers and following export—without sharing your password." />
+  <link rel="canonical" href="https://follow-check.com/guides/how-to-see-who-doesnt-follow-you-back-on-instagram/" />
+  <link rel="stylesheet" href="/content.css" />
+  <link rel="icon" type="image/png" href="/followcheck-logo.png" />
+  <meta property="og:type" content="article" />
+  <meta property="og:url" content="https://follow-check.com/guides/how-to-see-who-doesnt-follow-you-back-on-instagram/" />
+  <meta property="og:title" content="How to see who doesn’t follow you back on Instagram" />
+  <meta property="og:description" content="A password-free method using Instagram’s official data export." />
+  <title>How to see who doesn’t follow you back on Instagram | FollowCheck</title>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@graph": [
+      {"@type":"Article","headline":"How to see who doesn’t follow you back on Instagram","description":"A password-free method using Instagram’s official followers and following export.","datePublished":"2026-08-10","dateModified":"2026-08-10","author":{"@type":"Organization","name":"FollowCheck"},"publisher":{"@type":"Organization","name":"FollowCheck"},"mainEntityOfPage":"https://follow-check.com/guides/how-to-see-who-doesnt-follow-you-back-on-instagram/"},
+      {"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Home","item":"https://follow-check.com/"},{"@type":"ListItem","position":2,"name":"Guides","item":"https://follow-check.com/guides/"},{"@type":"ListItem","position":3,"name":"Who doesn’t follow you back?","item":"https://follow-check.com/guides/how-to-see-who-doesnt-follow-you-back-on-instagram/"}]}
+    ]
+  }
+  </script>
+</head>
+<body>
+  <nav class="site-nav" aria-label="Main navigation"><a class="brand" href="/">Follow<span>Check</span></a><div class="site-links"><a href="/guides/" aria-current="page">Guides</a><a href="/privacy/">Privacy</a><a href="/about/">About</a></div></nav>
+  <main class="content">
+    <nav class="breadcrumbs" aria-label="Breadcrumb"><a href="/">Home</a> / <a href="/guides/">Guides</a> / Who doesn’t follow you back?</nav>
+    <article>
+      <p class="eyebrow">Instagram followers</p>
+      <h1>How to see who doesn’t follow you back on Instagram</h1>
+      <p class="lede">The safest practical method is to compare the followers and following lists in your official Instagram data export. It takes longer than granting a tracker account access, but it does not require sharing your Instagram password.</p>
+      <p class="updated">Published and last reviewed: August 10, 2026</p>
+      <div class="callout warning"><strong>“Not following back” is not the same as “unfollowed.”</strong><p>A current export shows the relationship now. It cannot prove that someone used to follow you, when they stopped, or why. Historical unfollows require at least two snapshots from different dates.</p></div>
+      <h2>The password-free method</h2>
+      <ol class="steps">
+        <li><h3>Request the official data</h3><p>In Instagram Accounts Center, create an export to your device and select only Followers and following.</p></li>
+        <li><h3>Choose All time and JSON</h3><p>All time prevents a limited date range from producing an incomplete comparison. JSON is the structured format used by FollowCheck.</p></li>
+        <li><h3>Download the ZIP</h3><p>Instagram prepares the export and notifies you when it is ready. Preparation time varies by account and request.</p></li>
+        <li><h3>Compare followers with following</h3><p>An account that appears in <code>following.json</code> but not in any <code>followers_N.json</code> file is not following you back in that export.</p></li>
+      </ol>
+      <p>For screenshots and exact export settings, follow the <a href="/guides/download-instagram-followers-following-data/">Instagram followers and following download guide</a>.</p>
+      <h2>Can you compare the lists manually?</h2><p>Yes. You can extract the usernames from the JSON files, normalize capitalization, remove duplicates, and compare the two sets in a spreadsheet or script. Be careful with online converters and spreadsheet upload services: putting the export into another service changes the privacy model.</p>
+      <h2>What FollowCheck does</h2><p>FollowCheck reads the original ZIP—or the relevant JSON files—inside the browser. It normalizes usernames, combines every <code>followers_N.json</code> file, compares the sets, and displays accounts found only in the following list. The file and resulting usernames are not sent to FollowCheck.</p>
+      <h2>Before trusting the result</h2>
+      <ul>
+        <li>Confirm that the export date range was <strong>All time</strong>.</li>
+        <li>Include every numbered followers file, not only <code>followers_1.json</code>.</li>
+        <li>Remember that deleted, renamed, suspended, or recently changed accounts can complicate interpretation.</li>
+        <li>Treat the list as information, not proof of another person’s intention.</li>
+      </ul>
+      <section class="cta"><h2>Compare the export privately</h2><p>FollowCheck offers one browser-based audit and CSV download for $2.99. No Instagram password or FollowCheck subscription is required.</p><a class="button" href="/#payment-title">Open FollowCheck</a></section>
+    </article>
+  </main>
+  <footer class="site-footer"><a class="brand" href="/">Follow<span>Check</span></a><div class="site-links"><a href="/guides/">Guides</a><a href="/privacy/">Privacy</a><a href="/about/">About</a></div><p>Independent tool. Not affiliated with Instagram or Meta.</p></footer>
+</body>
+</html>

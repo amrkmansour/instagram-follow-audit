@@ -6,6 +6,7 @@
     <meta name="referrer" content="no-referrer" />
     <meta name="description" content="Compare your Instagram export privately in your browser to see which accounts do not follow you back." />
     <meta name="theme-color" content="#f4f1e9" />
+    <link rel="canonical" href="https://follow-check.com/" />
     <link rel="icon" type="image/png" href="/followcheck-logo.png" />
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
     <meta property="og:type" content="website" />
@@ -20,10 +21,47 @@
     <meta name="twitter:title" content="Follow check" />
     <meta name="twitter:description" content="See who doesn't follow you back. Your Instagram export stays on your device." />
     <meta name="twitter:image" content="https://follow-check.com/followcheck-logo.png" />
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@graph": [
+          {
+            "@type": "WebSite",
+            "@id": "https://follow-check.com/#website",
+            "url": "https://follow-check.com/",
+            "name": "FollowCheck",
+            "description": "A privacy-first browser tool for comparing an official Instagram export to find accounts that do not follow you back."
+          },
+          {
+            "@type": "WebApplication",
+            "@id": "https://follow-check.com/#application",
+            "name": "FollowCheck",
+            "url": "https://follow-check.com/",
+            "applicationCategory": "UtilitiesApplication",
+            "operatingSystem": "Any operating system with a modern web browser",
+            "browserRequirements": "Requires JavaScript and a modern web browser",
+            "description": "Compare the followers and following lists in an official Instagram JSON export. Files are processed in the browser and are not uploaded to FollowCheck.",
+            "offers": {
+              "@type": "Offer",
+              "price": "2.99",
+              "priceCurrency": "USD",
+              "category": "one-time audit"
+            }
+          }
+        ]
+      }
+    </script>
     <title>FollowCheck — See who doesn’t follow you back</title>
   </head>
   <body>
-    <div id="app"></div>
+    <div id="app">
+      <nav aria-label="Main navigation"><a href="/">FollowCheck</a> <a href="/guides/">Guides</a> <a href="/privacy/">Privacy</a> <a href="/about/">About</a></nav>
+      <main>
+        <h1>See who doesn’t follow you back on Instagram</h1>
+        <p>Compare the followers and following lists in your official Instagram export. Your ZIP and audit results are processed in this browser and are not uploaded to FollowCheck.</p>
+        <p>One audit costs $2.99. No Instagram password, FollowCheck account, or subscription is required.</p>
+      </main>
+    </div>
     <script type="module" src="/src/main.js"></script>
   </body>
 </html>

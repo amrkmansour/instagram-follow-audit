@@ -40,6 +40,9 @@ nav, footer {
 }
 .brand { color: #17221d; font-size: 20px; font-weight: 700; letter-spacing: -.7px; text-decoration: none; }
 .brand span { color: #a53724; }
+.nav-links, .footer-links { display: flex; align-items: center; gap: 18px; }
+.nav-links a, .footer-links a { color: #445149; font-size: 12px; font-weight: 600; text-decoration: none; }
+.nav-links a:hover, .footer-links a:hover { color: #8f2d1d; text-decoration: underline; }
 .privacy-pill { padding: 9px 13px; border: 1px solid #d6ded2; border-radius: 999px; background: #ffffff99; font-size: 12px; }
 .privacy-pill i, .working i { display: inline-block; width: 7px; height: 7px; margin-right: 7px; border-radius: 50%; background: #33844f; }
 
@@ -184,6 +187,7 @@ footer p { color: #6f756f; font-size: 11px; }
   .hero h1 { letter-spacing: -1.5px; }
   .steps { grid-template-columns: 1fr 1fr; }
   .privacy-pill { display: none; }
+  .nav-links { gap: 12px; }
   .summary { grid-template-columns: 1fr; }
   .result-head { align-items: flex-start; gap: 20px; }
   .filter-bar { grid-template-columns: 1fr; align-items: start; }
@@ -212,4 +216,6 @@ footer p { color: #6f756f; font-size: 11px; }
   .export-step-copy { grid-template-columns: 30px 1fr; gap: 10px; }
   .setting-arrows > div { padding: 13px 12px; }
   footer { align-items: flex-start; height: auto; gap: 20px; padding-top: 28px; padding-bottom: 28px; flex-direction: column; }
+  nav { height: auto; min-height: 82px; gap: 14px; flex-wrap: wrap; }
+  .nav-links { order: 3; width: 100%; padding-bottom: 16px; }
 }

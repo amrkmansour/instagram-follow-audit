@@ -67,7 +67,7 @@ if (app) {
     // The audit works without browser storage; some privacy modes block access to it entirely.
   }
   app.innerHTML = `
-    <nav aria-label="Main navigation"><a class="brand" href="#top">Follow<span>Check</span></a><div class="privacy-pill"><i></i> Your file stays on your device</div></nav>
+    <nav aria-label="Main navigation"><a class="brand" href="#top">Follow<span>Check</span></a><div class="nav-links"><a href="/guides/">Guides</a><a href="/privacy/">Privacy</a><a href="/about/">About</a></div><div class="privacy-pill"><i></i> Your file stays on your device</div></nav>
     <main id="top">
       <section class="hero" aria-labelledby="page-title">
         <h1 id="page-title">See who doesn't <em>follow you back.</em></h1>
@@ -131,7 +131,7 @@ if (app) {
         <div id="results" class="results-box" tabindex="-1" aria-labelledby="results-title"></div>
       </section>
     </main>
-    <footer><a class="brand" href="#top">Follow<span>Check</span></a><p>Independent tool. Not affiliated with Instagram or Meta.</p></footer>`;
+    <footer><a class="brand" href="#top">Follow<span>Check</span></a><div class="footer-links"><a href="/guides/">Guides</a><a href="/privacy/">Privacy</a><a href="/about/">About</a></div><p>Independent tool. Not affiliated with Instagram or Meta.</p></footer>`;
 
   const input = document.querySelector('#file');
   const zone = document.querySelector('#dropzone');
