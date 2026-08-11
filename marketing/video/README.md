@@ -1,9 +1,11 @@
 # Pilot video deliverable
 
-`output/follow-check-pilot-v1.mp4` is the first post-ready Follow Detective video.
+`output/follow-check-cartoon-story-v2.mp4` is the preferred post-ready Follow Detective video. It tells a four-scene mini story with a setup, surprise, investigation, and resolution.
+
+`output/follow-check-pilot-v1.mp4` is retained as the earlier animated-poster cut.
 
 - Canvas: 1080 × 1920 (9:16)
-- Duration: 16.5 seconds
+- Duration: 15 seconds
 - Video: H.264
 - Audio: AAC voiceover
 - Captions: burned in

@@ -17,10 +17,10 @@ struct Card {
 }
 
 let cards = [
-    Card(filename: "01-hook.png", lines: ["POV: YOU FOLLOW", "HUNDREDS OF PEOPLE…"], top: 170, opaque: false),
-    Card(filename: "02-question.png", lines: ["BUT WHO ACTUALLY", "FOLLOWS YOU BACK?"], top: 170, opaque: false),
-    Card(filename: "03-case-opened.png", lines: ["CASE OPENED"], top: 190, opaque: false),
-    Card(filename: "04-privacy.png", lines: ["NO PASSWORD", "YOUR FILE STAYS ON YOUR DEVICE"], top: 150, opaque: false),
+    Card(filename: "01-hook.png", lines: ["EVERY FOLLOW FELT", "LIKE A TWO-WAY STREET…"], top: 170, opaque: false),
+    Card(filename: "02-question.png", lines: ["THEN ONE ARROW", "BROKE"], top: 170, opaque: false),
+    Card(filename: "03-case-opened.png", lines: ["THE FOLLOW DETECTIVE", "CHECKED THE CLUES"], top: 170, opaque: false),
+    Card(filename: "04-privacy.png", lines: ["NO PASSWORD", "THE FILE STAYED ON HER DEVICE"], top: 150, opaque: false),
     Card(filename: "05-end-card.png", lines: ["FOLLOW CHECK", "FIND THE ONE-WAY FOLLOWS", "FOLLOW-CHECK.COM", "$2.99 · ONE AUDIT", "INDEPENDENT TOOL · NOT AFFILIATED WITH INSTAGRAM OR META"], top: 430, opaque: true)
 ]
 
