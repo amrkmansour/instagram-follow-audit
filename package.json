@@ -17,7 +17,7 @@
   },
   "dependencies": {
     "jszip": "^3.10.1",
-    "stripe": "^22.4.0"
+    "stripe": "^22.5.0"
   },
   "devDependencies": {
     "jsdom": "^26.1.0",
