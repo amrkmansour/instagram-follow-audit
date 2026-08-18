@@ -8,6 +8,7 @@ function json(body, status = 200, origin = '') {
     headers: {
       'content-type': 'application/json; charset=utf-8',
       'access-control-allow-origin': origin,
+      'access-control-allow-credentials': 'true',
       'access-control-allow-methods': 'POST, OPTIONS',
       'access-control-allow-headers': 'content-type',
       'vary': 'Origin',
@@ -81,7 +82,12 @@ async function recordEvent(request, env, origin) {
   if (!EVENT_NAMES.has(event) || !page.startsWith('/')) return json({ error: 'Invalid event.' }, 400, origin);
   const campaign = Object.fromEntries(CAMPAIGN_KEYS.map((key) => [key, cleanDimension(body?.campaign?.[key])]).filter(([, value]) => value));
   writeEvent(event, page, campaign, body?.target);
-  return new Response(null, { status: 204, headers: { 'access-control-allow-origin': origin, 'vary': 'Origin', 'cache-control': 'no-store' } });
+  return new Response(null, { status: 204, headers: {
+    'access-control-allow-origin': origin,
+    'access-control-allow-credentials': 'true',
+    'vary': 'Origin',
+    'cache-control': 'no-store',
+  } });
 }
 
 export class EntitlementGate {
@@ -188,6 +194,7 @@ export default {
     if (request.method === 'OPTIONS' && origin) {
       return new Response(null, { status: 204, headers: {
         'access-control-allow-origin': origin,
+        'access-control-allow-credentials': 'true',
         'access-control-allow-methods': 'POST, OPTIONS',
         'access-control-allow-headers': 'content-type',
         'vary': 'Origin',

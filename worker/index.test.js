@@ -25,9 +25,22 @@ describe('anonymous marketing events', () => {
     }), env);
 
     expect(response.status).toBe(204);
+    expect(response.headers.get('access-control-allow-origin')).toBe('https://follow-check.com');
+    expect(response.headers.get('access-control-allow-credentials')).toBe('true');
     expect(JSON.parse(log.mock.calls[0][0])).toEqual({
       message: 'marketing_event', event: 'audit_completed', page: '/', source: 'tiktok', medium: '', campaign: 'episode-01', content: '', target: '',
     });
+  });
+
+  it('allows credentialed event preflights from the production site', async () => {
+    const response = await worker.fetch(new Request('https://api.follow-check.com/api/events', {
+      method: 'OPTIONS',
+      headers: { origin: 'https://follow-check.com', 'access-control-request-method': 'POST' },
+    }), environment());
+
+    expect(response.status).toBe(204);
+    expect(response.headers.get('access-control-allow-origin')).toBe('https://follow-check.com');
+    expect(response.headers.get('access-control-allow-credentials')).toBe('true');
   });
 
   it('rejects unknown events and disallowed origins', async () => {
