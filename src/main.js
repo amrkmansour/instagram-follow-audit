@@ -71,6 +71,16 @@ if (app) {
     <main id="top">
       <section class="hero" aria-labelledby="page-title">
         <h1 id="page-title">See who doesn't <em>follow you back.</em></h1>
+        <p class="hero-lede">Get a clear list from your official Instagram export—without sharing your password or uploading your data.</p>
+        <div class="hero-actions">
+          <a class="checkout-button hero-checkout" data-track="checkout_started" href="${escapeHtml(checkoutUrlWithCampaign())}">Start my audit for $2.99 <span aria-hidden="true">→</span></a>
+          <span>One-time payment · No account · No subscription</span>
+        </div>
+        <ul class="hero-trust" aria-label="FollowCheck benefits">
+          <li>Your file stays on your device</li>
+          <li>Simple Instagram export guide included</li>
+          <li>Download your results as a CSV</li>
+        </ul>
       </section>
       <section class="instructions" aria-labelledby="instructions-title">
         <div class="section-heading"><span aria-hidden="true">01</span><div><h2 id="instructions-title">How it works</h2><p>Unlock the tool, request your data, and see your results.</p></div></div>
@@ -85,7 +95,7 @@ if (app) {
           <p>Your export and audit results are processed only in your browser. They are never uploaded or sent to FollowCheck, and they disappear when you close or refresh the page. Payment is handled separately by Stripe.</p>
         </aside>
       </section>
-      <section class="payment-section" aria-labelledby="payment-title">
+      <section class="payment-section" id="payment-section" aria-labelledby="payment-title">
         <div class="section-heading"><span aria-hidden="true">02</span><div><h2 id="payment-title">Unlock one audit</h2><p>One secure payment. No account or subscription.</p></div></div>
         <div class="payment-card"><div><strong>$2.99 <small>USD</small></strong><p>Includes one browser-based audit and CSV download. Payment is handled by Stripe.</p></div><a id="checkout" class="checkout-button" data-track="checkout_started" href="${escapeHtml(checkoutUrlWithCampaign())}">Pay securely with Stripe <span aria-hidden="true">→</span></a></div>
         <div id="payment-status" class="status" role="status" aria-live="polite" aria-atomic="true"></div>
