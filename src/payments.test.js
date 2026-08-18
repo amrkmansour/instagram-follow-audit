@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { fetchPaymentApi, getPendingCheckout, hasPasswordAccess } from './payments.js';
+import { fetchPaymentApi, getPendingCheckout } from './payments.js';
 
 function storageWith(value) {
   return { getItem: () => value };
@@ -16,14 +16,6 @@ describe('getPendingCheckout', () => {
   it('rejects malformed or incomplete stored values', () => {
     expect(getPendingCheckout(storageWith('{bad json'))).toBeNull();
     expect(getPendingCheckout(storageWith(JSON.stringify({ sessionId: 'cs_test_123' })))).toBeNull();
-  });
-});
-
-describe('hasPasswordAccess', () => {
-  it('only accepts the explicit session marker', () => {
-    expect(hasPasswordAccess(storageWith('granted'))).toBe(true);
-    expect(hasPasswordAccess(storageWith('true'))).toBe(false);
-    expect(hasPasswordAccess(storageWith(null))).toBe(false);
   });
 });
 

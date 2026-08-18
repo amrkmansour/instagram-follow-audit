@@ -42,3 +42,15 @@ describe('anonymous marketing events', () => {
     expect(log).not.toHaveBeenCalled();
   });
 });
+
+describe('paid-only audit access', () => {
+  it('does not expose the former password-access endpoint', async () => {
+    const response = await worker.fetch(new Request('https://api.follow-check.com/api/password-access', {
+      method: 'POST',
+      headers: { origin: 'https://follow-check.com', 'content-type': 'application/json' },
+      body: JSON.stringify({ password: 'old-shared-password' }),
+    }), environment());
+
+    expect(response.status).toBe(404);
+  });
+});

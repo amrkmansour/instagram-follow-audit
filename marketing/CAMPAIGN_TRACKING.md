@@ -30,7 +30,7 @@ Events are written as structured JSON in Cloudflare Workers Logs with `message` 
 | `content` | UTM content |
 | `target` | CTA target when applicable |
 
-Tracked events: `page_view`, `guide_cta_clicked`, `checkout_started`, `checkout_completed`, `password_access_granted`, `audit_completed`, and `csv_downloaded`.
+Tracked events: `page_view`, `guide_cta_clicked`, `checkout_started`, `checkout_completed`, `audit_completed`, and `csv_downloaded`.
 
 Campaign labels are also copied into Stripe Checkout metadata. This makes paid conversions attributable in Stripe even when browser event delivery is blocked.
 
