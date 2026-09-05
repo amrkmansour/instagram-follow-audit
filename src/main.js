@@ -89,9 +89,9 @@ if (app) {
           <div class="preview-top"><span>Example result</span><span class="live-dot">Private</span></div>
           <div class="preview-count"><strong>47</strong><span>accounts aren’t<br />following back</span></div>
           <div class="preview-search">⌕&nbsp;&nbsp; Search accounts</div>
-          <div class="preview-row"><span class="avatar avatar-one">JD</span><b>John Doe</b><span>View ↗</span></div>
-          <div class="preview-row"><span class="avatar avatar-two">MC</span><b>Mia Carter</b><span>View ↗</span></div>
-          <div class="preview-row faded"><span class="avatar avatar-three">NK</span><b>Noah Kim</b><span>View ↗</span></div>
+          <div class="preview-row"><span class="avatar avatar-one">JD</span><b>@johndoe</b><span>View ↗</span></div>
+          <div class="preview-row"><span class="avatar avatar-two">MC</span><b>@miacarter</b><span>View ↗</span></div>
+          <div class="preview-row faded"><span class="avatar avatar-three">NK</span><b>@noahkim</b><span>View ↗</span></div>
           <div class="preview-footer"><span>Example data—not a real audit</span><b>Export CSV ↓</b></div>
         </div>
       </section>
