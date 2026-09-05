@@ -67,28 +67,46 @@ if (app) {
     // The audit works without browser storage; some privacy modes block access to it entirely.
   }
   app.innerHTML = `
-    <nav aria-label="Main navigation"><a class="brand" href="#top">Follow<span>Check</span></a><div class="nav-links"><a href="/guides/">Guides</a><a href="/privacy/">Privacy</a><a href="/about/">About</a></div><div class="privacy-pill"><i></i> Your file stays on your device</div></nav>
+    <nav aria-label="Main navigation"><a class="brand" href="#top">Follow<span>Check</span></a><div class="nav-links"><a href="#how-it-works">How it works</a><a href="/guides/">Guides</a><a href="/privacy/">Privacy</a></div><div class="privacy-pill"><i></i> Private by design</div></nav>
     <main id="top">
       <section class="hero" aria-labelledby="page-title">
-        <h1 id="page-title">See who doesn't <em>follow you back.</em></h1>
-        <p class="hero-lede">Get a clear list from your official Instagram export—without sharing your password or uploading your data.</p>
-        <div class="hero-actions">
-          <a class="checkout-button hero-checkout" data-track="checkout_started" href="${escapeHtml(checkoutUrlWithCampaign())}">Start my audit for $2.99 <span aria-hidden="true">→</span></a>
-          <span>One-time payment · No account · No subscription</span>
+        <div class="hero-copy">
+          <div class="eyebrow"><span aria-hidden="true">✦</span> The private Instagram follow check</div>
+          <h1 id="page-title">Find out who’s <em>not following back.</em></h1>
+          <p class="hero-lede">Turn your official Instagram export into a clean, searchable list. No password. No sketchy account access. Your file never leaves your device.</p>
+          <div class="hero-actions">
+            <a class="checkout-button hero-checkout" data-track="checkout_started" href="${escapeHtml(checkoutUrlWithCampaign())}">Find my non-followers <span class="button-price">$2.99</span> <span aria-hidden="true">→</span></a>
+            <a class="text-link" href="/guides/download-instagram-followers-following-data/">How do I get my export?</a>
+          </div>
+          <span class="purchase-note">One-time purchase · No account · No subscription</span>
+          <ul class="hero-trust" aria-label="FollowCheck benefits">
+            <li>Private, on-device check</li>
+            <li>Search every result</li>
+            <li>Download as CSV</li>
+          </ul>
         </div>
-        <ul class="hero-trust" aria-label="FollowCheck benefits">
-          <li>Your file stays on your device</li>
-          <li>Simple Instagram export guide included</li>
-          <li>Download your results as a CSV</li>
-        </ul>
+        <div class="result-preview" aria-label="Example FollowCheck result">
+          <div class="preview-top"><span>Example result</span><span class="live-dot">Private</span></div>
+          <div class="preview-count"><strong>47</strong><span>accounts aren’t<br />following back</span></div>
+          <div class="preview-search">⌕&nbsp;&nbsp; Search accounts</div>
+          <div class="preview-row"><span class="avatar avatar-one">01</span><b>@example_one</b><span>View ↗</span></div>
+          <div class="preview-row"><span class="avatar avatar-two">02</span><b>@example_two</b><span>View ↗</span></div>
+          <div class="preview-row faded"><span class="avatar avatar-three">03</span><b>@example_three</b><span>View ↗</span></div>
+          <div class="preview-footer"><span>Example data—not a real audit</span><b>Export CSV ↓</b></div>
+        </div>
       </section>
-      <section class="instructions" aria-labelledby="instructions-title">
-        <div class="section-heading"><span aria-hidden="true">01</span><div><h2 id="instructions-title">How it works</h2><p>Unlock the tool, request your data, and see your results.</p></div></div>
+      <section class="value-strip" aria-label="What is included">
+        <div><span aria-hidden="true">01</span><strong>Official export only</strong><p>We never ask for your Instagram login.</p></div>
+        <div><span aria-hidden="true">02</span><strong>Results in your browser</strong><p>Your follower usernames are not sent to us.</p></div>
+        <div><span aria-hidden="true">03</span><strong>A list you can use</strong><p>Search, review, and download your results.</p></div>
+      </section>
+      <section class="instructions" id="how-it-works" aria-labelledby="instructions-title">
+        <div class="section-heading"><span aria-hidden="true">01</span><div><h2 id="instructions-title">How it works</h2><p>Get your export, run one private audit, and review the results.</p></div></div>
         <ol class="steps">
-          <li><b aria-hidden="true">1</b><h3>Unlock your audit for $2.99</h3><p>Pay once to access the tool and get simple, step-by-step instructions for requesting the right file from Instagram.</p></li>
-          <li><b aria-hidden="true">2</b><h3>Request your data from Instagram</h3><p>Instagram will prepare your account data—often in just 5–10 minutes.</p></li>
-          <li><b aria-hidden="true">3</b><h3>Upload the file you receive</h3><p>Return here and upload the file Instagram provides. It stays on your device.</p></li>
-          <li><b aria-hidden="true">4</b><h3>See who doesn’t follow you back</h3><p>Get a clear list of the accounts you follow that don’t follow you back.</p></li>
+          <li><b aria-hidden="true">1</b><h3>Get your Instagram export</h3><p>Use our free guide to request only your Followers and following data in JSON format.</p></li>
+          <li><b aria-hidden="true">2</b><h3>Unlock one audit</h3><p>Pay $2.99 once. Checkout is securely handled by Stripe—there is no subscription.</p></li>
+          <li><b aria-hidden="true">3</b><h3>Choose your ZIP</h3><p>Drop in the file Instagram sends you. The comparison happens on your device.</p></li>
+          <li><b aria-hidden="true">4</b><h3>Clean up your following</h3><p>Search the current non-followers, mark brands or celebrities, and save a CSV.</p></li>
         </ol>
         <aside class="privacy-disclaimer" aria-label="Data privacy">
           <strong>We don’t store your Instagram data.</strong>
@@ -97,12 +115,22 @@ if (app) {
       </section>
       <section class="payment-section" id="payment-section" aria-labelledby="payment-title">
         <div class="section-heading"><span aria-hidden="true">02</span><div><h2 id="payment-title">Unlock one audit</h2><p>One secure payment. No account or subscription.</p></div></div>
-        <div class="payment-card"><div><strong>$2.99 <small>USD</small></strong><p>Includes one browser-based audit and CSV download. Payment is handled by Stripe.</p></div><a id="checkout" class="checkout-button" data-track="checkout_started" href="${escapeHtml(checkoutUrlWithCampaign())}">Pay securely with Stripe <span aria-hidden="true">→</span></a></div>
+        <div class="payment-card"><div><span class="payment-kicker">ONE-TIME PURCHASE</span><strong>$2.99 <small>USD</small></strong><p>One browser-based audit with searchable results, category tools, and CSV download. Secure checkout by Stripe.</p></div><div class="payment-action"><a id="checkout" class="checkout-button" data-track="checkout_started" href="${escapeHtml(checkoutUrlWithCampaign())}">See my results for $2.99 <span aria-hidden="true">→</span></a><small>Under 18? Ask a parent or guardian before purchasing.</small></div></div>
         <div id="payment-status" class="status" role="status" aria-live="polite" aria-atomic="true"></div>
+      </section>
+      <section class="faq-section" aria-labelledby="faq-title">
+        <div class="section-heading"><span aria-hidden="true">03</span><div><h2 id="faq-title">Questions, answered</h2><p>The important stuff before you pay.</p></div></div>
+        <div class="faq-list">
+          <details open><summary>Do you need my Instagram password?</summary><p>No. FollowCheck only reads the official export you request directly from Instagram. It never asks for your password or connects to your account.</p></details>
+          <details><summary>Does my Instagram file get uploaded?</summary><p>No. Your ZIP, usernames, and results are processed locally in this browser and are not sent to FollowCheck. Stripe separately handles payment information.</p></details>
+          <details><summary>Does this show who unfollowed me?</summary><p>It shows the accounts you currently follow that are not in your current followers list. A single export cannot show who unfollowed you in the past or when it happened.</p></details>
+          <details><summary>What does one audit include?</summary><p>One comparison of a valid export, plus search, manual sorting for brands or celebrities, and a CSV download. Keep this tab open while requesting your export so your purchase remains available.</p></details>
+          <details><summary>Will it work on my phone?</summary><p>Yes. FollowCheck works in modern mobile and desktop browsers. Download the ZIP from Instagram, return to this tab, and select it without unzipping it.</p></details>
+        </div>
       </section>
       <section class="upload-section" id="upload-section" aria-labelledby="upload-title" hidden>
         <div class="export-guide" aria-labelledby="export-guide-title">
-          <div class="section-heading"><span aria-hidden="true">03</span><div><h2 id="export-guide-title">Request the right Instagram data</h2><p>Follow these settings so your audit has everything it needs.</p></div></div>
+          <div class="section-heading"><span aria-hidden="true">04</span><div><h2 id="export-guide-title">Request the right Instagram data</h2><p>Follow these settings so your audit has everything it needs.</p></div></div>
           <ol class="export-steps">
             <li>
               <div class="export-step-copy"><span class="step-number">1</span><div><h3>Open Accounts Center</h3><p>Open Instagram’s Accounts Center in your browser to begin your request.</p><a class="primary-link" href="https://accountscenter.instagram.com/info_and_permissions/" target="_blank" rel="noreferrer">Open Accounts Center <span aria-hidden="true">↗</span><span class="sr-only"> (opens in a new tab)</span></a></div></div>
@@ -131,7 +159,7 @@ if (app) {
             </li>
           </ol>
         </div>
-        <div class="section-heading upload-heading"><span aria-hidden="true">04</span><div><h2 id="upload-title">Upload your Instagram file</h2><p>We’ll compare the two lists right here in your browser.</p></div></div>
+        <div class="section-heading upload-heading"><span aria-hidden="true">05</span><div><h2 id="upload-title">Upload your Instagram file</h2><p>We’ll compare the two lists right here in your browser.</p></div></div>
         <label class="dropzone" id="dropzone" tabindex="0" role="button" aria-describedby="upload-help">
           <input type="file" id="file" accept=".zip,.json,application/zip,application/json" multiple />
           <span class="upload-icon" aria-hidden="true">↑</span><strong>Drop your Instagram file here</strong><span>or <u>choose files</u> from your device</span><small id="upload-help">ZIP recommended · JSON files also accepted · Maximum 50 MB</small>
@@ -140,6 +168,7 @@ if (app) {
         <div id="results" class="results-box" tabindex="-1" aria-labelledby="results-title"></div>
       </section>
     </main>
+    <div class="mobile-cta"><a class="checkout-button" data-track="checkout_started" href="${escapeHtml(checkoutUrlWithCampaign())}">Find my non-followers · $2.99</a></div>
     <footer><a class="brand" href="#top">Follow<span>Check</span></a><div class="footer-links"><a href="/guides/">Guides</a><a href="/privacy/">Privacy</a><a href="/about/">About</a></div><p>Independent tool. Not affiliated with Instagram or Meta.</p></footer>`;
 
   const input = document.querySelector('#file');
@@ -147,11 +176,13 @@ if (app) {
   const status = document.querySelector('#status');
   const results = document.querySelector('#results');
   const checkoutButton = document.querySelector('#checkout');
+  const mobileCta = document.querySelector('.mobile-cta');
   const paymentStatus = document.querySelector('#payment-status');
   const uploadSection = document.querySelector('#upload-section');
 
   const revealUpload = (message) => {
     uploadSection.hidden = false;
+    mobileCta.hidden = true;
     paymentStatus.innerHTML = `<div class="working"><i></i> ${escapeHtml(message)}</div>`;
     uploadSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
   };
@@ -281,7 +312,7 @@ async function processFiles(fileList, elements) {
     const markedCelebrity = new Set();
     results.innerHTML = `<div class="summary"><div><small>Following</small><strong>${following.size.toLocaleString()}</strong></div><div><small>Followers in file</small><strong>${followers.size.toLocaleString()}</strong></div><div><small>Not following back</small><strong>${nonFollowers.length.toLocaleString()}</strong></div></div>
       <div class="notice"><strong>Before relying on this list:</strong> confirm that you requested an <b>All time</b> export. Instagram does not include a reliable setting in the ZIP that lets this tool verify the selected date range.</div>
-      <div class="result-head"><div><h2 id="results-title">Not following you back</h2><p>Mark celebrity or verified accounts to move them into their own section. Verification is not checked automatically.</p></div><div class="result-actions"><button id="start-over" class="secondary-button" type="button">Start over</button><button id="download" type="button">Download CSV</button></div></div>
+      <div class="result-head"><div><h2 id="results-title">Not following you back</h2><p>Mark celebrity or verified accounts to move them into their own section. Verification is not checked automatically.</p></div><div class="result-actions"><button id="download" type="button">Download CSV</button></div></div>
       <div class="filter-bar"><label>Search accounts <input id="account-search" type="search" placeholder="Type a username…" autocomplete="off" /></label><span id="visible-count"></span><button id="restore-exclusions" class="text-button" type="button">Restore excluded accounts</button></div>
       <div class="accounts" id="accounts"></div>
       <section class="celebrity-results" id="celebrity-results" aria-labelledby="celebrity-title" hidden>
@@ -351,15 +382,6 @@ async function processFiles(fileList, elements) {
       status.textContent = 'Restored all excluded accounts.';
     }, listenerOptions);
     searchInput.addEventListener('input', renderAccounts, listenerOptions);
-    results.querySelector('#start-over').addEventListener('click', () => {
-      ++auditGeneration;
-      auditController.abort();
-      if (activeAuditController === auditController) activeAuditController = null;
-      results.replaceChildren();
-      status.textContent = 'Ready for another export.';
-      input.value = '';
-      zone?.focus();
-    }, listenerOptions);
     results.querySelector('#download')?.addEventListener('click', () => downloadCsv(filterExcluded(nonFollowers, excluded), markedCelebrity), listenerOptions);
     renderAccounts();
     status.textContent = `Finished. Found ${nonFollowers.length.toLocaleString()} accounts that do not follow you back.`;
